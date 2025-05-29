@@ -404,8 +404,7 @@ def ai_trading():
                         Recent trading reflection:
                         {reflection}
 
-                        Particularly important is to always refer to the trading method of 'Wonyyotti', a legendary Korean investor, to assess the current situation and make trading decisions. Wonyyotti's trading method is as follows:
-
+                        Particularly important is to always follow the “Short Swing Trading” strategy (1% stop loss, 2–3% take profit) to assess the current situation and make trading decisions. The details of this strategy are as follows:
                         {youtube_transcript}
 
                         Based on this trading method, analyze the current market situation and make a judgment by synthesizing it with the provided data and recent performance reflection.
