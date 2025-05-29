@@ -587,12 +587,12 @@ if __name__ == "__main__":
             trading_in_progress = False
 
     ## 테스트용 바로 실행
-    #job()
+    job()
 
-    # 매일 특정 시간(예: 오전 9시, 오후 3시, 오후 9시)에 실행
-    schedule.every().day.at("09:10").do(job)
-    schedule.every().day.at("15:10").do(job)
-    schedule.every().day.at("21:10").do(job)
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+    # # 매일 특정 시간(예: 오전 9시, 오후 3시, 오후 9시)에 실행
+    # schedule.every().day.at("09:10").do(job)
+    # schedule.every().day.at("15:10").do(job)
+    # schedule.every().day.at("21:10").do(job)
+    # while True:
+    #     schedule.run_pending()
+    #     time.sleep(1)
