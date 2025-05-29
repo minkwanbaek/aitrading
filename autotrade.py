@@ -29,8 +29,26 @@ import schedule
 load_dotenv()
 
 # 로깅 설정 - 로그 레벨을 INFO로 설정하여 중요 정보 출력
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+handler = logging.FileHandler('trade.log')
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+# Slack setup
+SLACK_WEBHOOK = os.getenv('SLACK_WEBHOOK_URL')
+
+def send_slack_notification(message):
+    if not SLACK_WEBHOOK:
+        logger.warning("Slack Webhook URL not set")
+        return
+    try:
+        response = requests.post(SLACK_WEBHOOK, json={"text": message})
+        if response.status_code != 200:
+            logger.error(f"Slack notification failed: {response.text}")
+    except Exception as e:
+        logger.error(f"Slack notification error: {e}")
 
 # Upbit 객체 생성
 access = os.getenv("UPBIT_ACCESS_KEY")
@@ -39,6 +57,7 @@ if not access or not secret:
     logger.error("API keys not found. Please check your .env file.")
     raise ValueError("Missing API keys. Please check your .env file.")
 upbit = pyupbit.Upbit(access, secret)
+
 
 # OpenAI 구조화된 출력 체크용 클래스
 class TradingDecision(BaseModel):
@@ -311,6 +330,7 @@ def capture_and_encode_screenshot(driver):
 
 ### 메인 AI 트레이딩 로직
 def ai_trading():
+    logger.info("[STEP] Data Collection Started")    
     global upbit
     ### 데이터 가져오기
     # 1. 현재 투자 상태 조회
@@ -355,18 +375,22 @@ def ai_trading():
         logger.info(f"스크린샷 캡처 완료.")
     except WebDriverException as e:
         logger.error(f"캡쳐시 WebDriver 오류 발생: {e}")
+        send_slack_notification(f"캡쳐시 WebDriver 오류 발생: {e}")
         chart_image = None
     except Exception as e:
         logger.error(f"차트 캡처 중 오류 발생: {e}")
+        send_slack_notification(f"차트 캡처 중 오류 발생: {e}")
         chart_image = None
     finally:
         if driver:
             driver.quit()
-
+    logger.info("[STEP] Data Collection Completed")
+    
     ### AI에게 데이터 제공하고 판단 받기
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     if not client.api_key:
         logger.error("OpenAI API key is missing or invalid.")
+        send_slack_notification(f"OpenAI API key is missing or invalid.")
         return None
     try:
         # 데이터베이스 연결
@@ -385,7 +409,7 @@ def ai_trading():
             
             # 반성 및 개선 내용 생성
             reflection = generate_reflection(recent_trades, current_market_data)
-            
+            logger.info("[STEP] AI Decision Started")            
             # AI 모델에 반성 내용 제공
             response = client.chat.completions.create(
                 model="gpt-4o-2024-08-06",
@@ -465,17 +489,20 @@ def ai_trading():
                 result = TradingDecision.model_validate_json(response.choices[0].message.content)
             except Exception as e:
                 logger.error(f"Error parsing AI response: {e}")
+                send_slack_notification(f"Error parsing AI response: {e}")
                 return
             
             logger.info(f"AI Decision: {result.decision.upper()}")
             logger.info(f"Decision Reason: {result.reason}")
-
+            logger.info("[STEP] AI Decision Completed")   
+            logger.info("[STEP] Order Execution Started")
             order_executed = False
 
             if result.decision == "buy":
                 my_krw = upbit.get_balance("KRW")
                 if my_krw is None:
                     logger.error("Failed to retrieve KRW balance.")
+                    send_slack_notification(f"Failed to retrieve KRW balance.")
                     return
                 buy_amount = my_krw * (result.percentage / 100) * 0.9995  # 수수료 고려
                 if buy_amount > 5000:
@@ -484,33 +511,42 @@ def ai_trading():
                         order = upbit.buy_market_order("KRW-BTC", buy_amount)
                         if order:
                             logger.info(f"Buy order executed successfully: {order}")
+                            send_slack_notification(f"Buy order executed successfully: {order}")
                             order_executed = True
                         else:
                             logger.error("Buy order failed.")
+                            send_slack_notification(f"Buy order failed.")
                     except Exception as e:
                         logger.error(f"Error executing buy order: {e}")
+                        send_slack_notification(f"Error executing buy order: {e}")
                 else:
                     logger.warning("Buy Order Failed: Insufficient KRW (less than 5000 KRW)")
+                    send_slack_notification(f"Buy Order Failed: Insufficient KRW (less than 5000 KRW)")
             elif result.decision == "sell":
                 my_btc = upbit.get_balance("KRW-BTC")
                 if my_btc is None:
                     logger.error("Failed to retrieve KRW balance.")
+                    send_slack_notification(f"Failed to retrieve KRW balance.")
                     return
                 sell_amount = my_btc * (result.percentage / 100)
                 current_price = pyupbit.get_current_price("KRW-BTC")
                 if sell_amount * current_price > 5000:
                     logger.info(f"Sell Order Executed: {result.percentage}% of held BTC")
+                    send_slack_notification(f"Sell Order Executed: {result.percentage}% of held BTC")
                     try:
                         order = upbit.sell_market_order("KRW-BTC", sell_amount)
                         if order:
                             order_executed = True
                         else:
                             logger.error("Buy order failed.")
+                            send_slack_notification(f"Buy order failed.")
                     except Exception as e:
                         logger.error(f"Error executing sell order: {e}")
+                        send_slack_notification(f"Error executing sell order: {e}")
                 else:
                     logger.warning("Sell Order Failed: Insufficient BTC (less than 5000 KRW worth)")
-            
+                    send_slack_notification(f"Sell Order Failed: Insufficient BTC (less than 5000 KRW worth)")
+            logger.info("[STEP] Order Execution Completed")  
             # 거래 실행 여부와 관계없이 현재 잔고 조회
             time.sleep(2)  # API 호출 제한을 고려하여 잠시 대기
             balances = upbit.get_balances()
@@ -518,10 +554,13 @@ def ai_trading():
             krw_balance = next((float(balance['balance']) for balance in balances if balance['currency'] == 'KRW'), 0)
             btc_avg_buy_price = next((float(balance['avg_buy_price']) for balance in balances if balance['currency'] == 'BTC'), 0)
             current_btc_price = pyupbit.get_current_price("KRW-BTC")
-
+            logger.info("[STEP] DB Record Started")
             # 거래 기록을 DB에 저장하기
             log_trade(conn, result.decision, result.percentage if order_executed else 0, result.reason, 
                     btc_balance, krw_balance, btc_avg_buy_price, current_btc_price, reflection)
+            logger.info("[STEP] DB Record Completed")
+            send_slack_notification(f"✅ Trading cycle complete: {result.decision}")
+
     except sqlite3.Error as e:
         logger.error(f"Database connection error: {e}")
         return
@@ -548,12 +587,12 @@ if __name__ == "__main__":
             trading_in_progress = False
 
     ## 테스트용 바로 실행
-    job()
+    #job()
 
-    ## 매일 특정 시간(예: 오전 9시, 오후 3시, 오후 9시)에 실행
-    # schedule.every().day.at("09:00").do(job)
-    # schedule.every().day.at("15:00").do(job)
-    # schedule.every().day.at("21:00").do(job)
-    # while True:
-    #     schedule.run_pending()
-    #     time.sleep(1)
+    # 매일 특정 시간(예: 오전 9시, 오후 3시, 오후 9시)에 실행
+    schedule.every().day.at("09:10").do(job)
+    schedule.every().day.at("15:10").do(job)
+    schedule.every().day.at("21:10").do(job)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
