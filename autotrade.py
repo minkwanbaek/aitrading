@@ -428,9 +428,10 @@ def ai_trading():
                         Recent trading reflection:
                         {reflection}
 
-                        Particularly important is to always follow the “Short Swing Trading” strategy (1% stop loss, 2–3% take profit) to assess the current situation and make trading decisions. The details of this strategy are as follows:
-                        {youtube_transcript}
+                        Particularly important is to follow and optimize the “Short Swing Trading” strategy, combined with precise indicator-based entry and exit signals. Here are the key rules and priorities:
 
+                        {youtube_transcript}
+                        
                         Based on this trading method, analyze the current market situation and make a judgment by synthesizing it with the provided data and recent performance reflection.
 
                         Response format:
@@ -587,12 +588,12 @@ if __name__ == "__main__":
             trading_in_progress = False
 
     ## 테스트용 바로 실행
-    job()
+    #job()
 
-    # # 매일 특정 시간(예: 오전 9시, 오후 3시, 오후 9시)에 실행
-    # schedule.every().day.at("09:10").do(job)
-    # schedule.every().day.at("15:10").do(job)
-    # schedule.every().day.at("21:10").do(job)
-    # while True:
-    #     schedule.run_pending()
-    #     time.sleep(1)
+    # 매일 특정 시간(예: 오전 9시, 오후 3시, 오후 9시)에 실행
+    schedule.every().day.at("09:10").do(job)
+    schedule.every().day.at("15:10").do(job)
+    schedule.every().day.at("21:10").do(job)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
