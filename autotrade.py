@@ -19,6 +19,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException, WebDriverException, NoSuchElementException
 import logging
+import sys
 from youtube_transcript_api import YouTubeTranscriptApi
 from pydantic import BaseModel
 import sqlite3
@@ -31,10 +32,21 @@ load_dotenv()
 # 로깅 설정 - 로그 레벨을 INFO로 설정하여 중요 정보 출력
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-handler = logging.FileHandler('trade.log')
+
+# 포맷터 설정
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+
+# 파일 핸들러 (trade.log에 기록)
+file_handler = logging.FileHandler('trade.log')
+file_handler.setFormatter(formatter)
+
+# 콘솔 핸들러 (stdout으로 출력)
+stream_handler = logging.StreamHandler(sys.stdout)
+stream_handler.setFormatter(formatter)
+
+# 핸들러 등록
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
 
 # Slack setup
 SLACK_WEBHOOK = os.getenv('SLACK_WEBHOOK_URL')
