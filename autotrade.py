@@ -443,7 +443,9 @@ def ai_trading():
                         Particularly important is to follow and optimize the “Short Swing Trading” strategy, combined with precise indicator-based entry and exit signals. Here are the key rules and priorities:
 
                         {youtube_transcript}
-                        
+                       
+                        Note: On Upbit, selling is not allowed if the amount of BTC to be sold is worth less than 5000 KRW. In such cases, you must not respond with a 'sell' decision. Instead, consider whether holding or buying is more appropriate based on the market conditions.
+
                         Based on this trading method, analyze the current market situation and make a judgment by synthesizing it with the provided data and recent performance reflection.
 
                         Response format:
