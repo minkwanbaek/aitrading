@@ -367,12 +367,6 @@ def ai_trading():
     # 5. 뉴스 헤드라인 가져오기
     news_headlines = get_bitcoin_news()
 
-    # 6. YouTube 자막 데이터 가져오기
-    # youtube_transcript = get_combined_transcript("3XbtEX3jUv4")
-    f = open("strategy.txt", "r", encoding="utf-8")
-    youtube_transcript = f.read()
-    f.close()
-
     # 7. Selenium으로 차트 캡처
     driver = None
     try:
@@ -442,9 +436,36 @@ def ai_trading():
 
                         Particularly important is to follow and optimize the “Short Swing Trading” strategy, combined with precise indicator-based entry and exit signals. Here are the key rules and priorities:
 
-                        {youtube_transcript}
+1. Core Short Swing Trading Rules:
+- Focus on short-term profit within 1–3 days.
+- Apply a strict **1% stop loss** to cap downside.
+- Target **2–4% take profit** for each trade.
+- Avoid overtrading: max 3 trades per day.
+- Prioritize clear entry signals confirmed by multiple indicators (e.g., RSI, MACD, Bollinger Bands).
+- Adjust position size (percentage) based on signal strength:
+    → Strong signals → up to 50–70% of available funds.
+    → Moderate signals → 20–40%.
+    → Weak or conflicting signals → hold or minimal 10–15%.
+
+2. Bollinger Band Strategy (High Priority):
+- **Buy Entry**: When the closing price breaks above the upper Bollinger Band.
+- **Buy Exit**: When the closing price breaks below the middle Bollinger Band.
+- **Sell Entry**: When the closing price breaks below the lower Bollinger Band.
+- **Sell Exit**: When the closing price breaks above the middle Bollinger Band.
+
+3. Additional Considerations:
+- Consider overall market sentiment:
+    → Extreme greed → cautious with new buys.
+    → Extreme fear → cautious with new sells.
+- Integrate recent news headlines, especially major events (regulation, ETF approvals, hacks).
+- Avoid trading during unpredictable high-volatility events.
+- Use reflection on past trades to dynamically improve and avoid repeated mistakes.
+
+Based on these combined rules, analyze the current market, prioritize the strongest signals, and generate the optimal trading decision.
                        
                         Note: On Upbit, selling is not allowed if the amount of BTC to be sold is worth less than 5000 KRW. In such cases, you must not respond with a 'sell' decision. Instead, consider whether holding or buying is more appropriate based on the market conditions.
+
+                        Buying is not allowed if the buy amount is less than 5,000 KRW. In such cases, you must not respond with a 'buy' decision. Instead, consider whether holding or selling is more appropriate based on the market conditions.
 
                         Based on this trading method, analyze the current market situation and make a judgment by synthesizing it with the provided data and recent performance reflection.
 
@@ -522,6 +543,7 @@ def ai_trading():
                 buy_amount = my_krw * (result.percentage / 100) * 0.9995  # 수수료 고려
                 if buy_amount > 5000:
                     logger.info(f"Buy Order Executed: {result.percentage}% of available KRW")
+                    send_slack_notification(f"Buy Order Executed: {result.percentage}% of available KRW")
                     try:
                         order = upbit.buy_market_order("KRW-BTC", buy_amount)
                         if order:
@@ -602,12 +624,12 @@ if __name__ == "__main__":
             trading_in_progress = False
 
     ## 테스트용 바로 실행
-    #job()
+    job()
 
     # 매일 특정 시간(예: 오전 9시, 오후 3시, 오후 9시)에 실행
-    schedule.every().day.at("09:10").do(job)
-    schedule.every().day.at("15:10").do(job)
-    schedule.every().day.at("21:10").do(job)
+    #schedule.every().day.at("09:10").do(job)
+    #schedule.every().day.at("15:10").do(job)
+    #schedule.every().day.at("21:10").do(job)
     while True:
         schedule.run_pending()
         time.sleep(1)
