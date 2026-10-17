@@ -274,6 +274,17 @@ def limits():
     per_kr = strategy.BUY_AMOUNT
     per_us = getattr(strategy, "US_BUY_AMOUNT", 0)
     most = strategy.MAX_HOLDINGS
+    if getattr(strategy, 'MANAGED_PORTFOLIO', False):
+        return {
+            '총 운용 예산': f'{strategy.TOTAL_BUDGET:,}원',
+            '한 종목에 넣는 돈': f'국내 최대 {per_kr:,}원 · 미국 안 함',
+            '최대 종목 수': f'{most}종목',
+            '매수 투입 상한': f'{strategy.TOTAL_BUDGET - strategy.CASH_RESERVE_KRW:,}원',
+            '현금 보유 기준': f'{strategy.CASH_RESERVE_KRW:,}원',
+            '손절 · 익절': f'{strategy.STOP_LOSS_PCT:+.1f}% · 고정 익절 없음',
+            '계좌 손실 중단': f'{strategy.MAX_LOSS_KRW:,}원',
+            '기업 재평가': f'{strategy.REVIEW_DAYS}일마다',
+        }
     return {
         "한 종목에 넣는 돈": f"국내 {per_kr:,}원 · 미국 ${per_us:,}",
         "최대 종목 수": f"{most}종목",
@@ -281,7 +292,7 @@ def limits():
         "최대로 들어갈 수 있는 돈": f"국내만이면 {per_kr * most:,}원 · 미국만이면 ${per_us * most:,}",
         "손절 · 익절": (
             f"{getattr(strategy, 'STOP_LOSS_PCT', 0):+.1f}% · "
-            f"{getattr(strategy, 'TAKE_PROFIT_PCT', 0):+.1f}%"
+            + (f"{strategy.TAKE_PROFIT_PCT:+.1f}%" if strategy.TAKE_PROFIT_PCT is not None else '고정 익절 없음')
         ),
         "미국을 보는 시간대": " · ".join(
             {"pre": "프리마켓", "regular": "정규장", "after": "애프터마켓"}[s] for s in us_sessions()
@@ -384,7 +395,7 @@ def remember(result):
         # 막혀 있으면 화면 맨 위에 그대로 띄웁니다. 다음 회차가 잘 돌면 지워집니다.
         "문제": result.get("오류", ""),
     }
-    for field in ("계좌", "지금", "국내장", "미국장", "요약"):
+    for field in ("계좌", "지금", "국내장", "미국장", "요약", "운용", "조사"):
         if field in result:
             saved[field] = result[field]
     if "지금" in result:
@@ -842,13 +853,13 @@ def main():
         found = broker.accounts()
         act = broker.account()
     except Exception as exc:
-        log(f"NH에 연결하지 못했습니다: {exc}")
+        log(f"NH에 연결하지 못했습니다: {type(exc).__name__}")
         if looks_like_network(exc):
             # 설정 화면을 열어 봐야 소용없습니다. 키가 아니라 길이 막힌 것이니,
             # 무엇을 봐야 하는지 적어 두고 회차를 끝냅니다.
             log(BLOCKED)
             remember({"오류": BLOCKED})
-            print(json.dumps({"오류": BLOCKED, "자세히": str(exc)}, ensure_ascii=False, indent=2))
+            print(json.dumps({"오류": BLOCKED, "자세히": type(exc).__name__}, ensure_ascii=False, indent=2))
             return
         # --account 는 설정 화면이 스스로 부릅니다. 여기서 또 열면 설정 화면이
         # 설정 화면을 띄우는 꼴이 됩니다.
@@ -860,6 +871,20 @@ def main():
     log(f"{where} 계좌 {act[:3]}***{act[-2:]}")
     if len(found) > 1:
         log(f"  계좌가 {len(found)}개라 번호가 가장 빠른 것을 골랐습니다")
+
+    if getattr(strategy, 'MANAGED_PORTFOLIO', False):
+        import managed
+        with managed.cycle_lock():
+            try:
+                calls = read_calls(argv[1:]) if mode == '--do' else None
+                result = managed.run(act, mode, calls)
+            except Exception as exc:
+                # 인증·계좌 응답 원문은 노출하지 않습니다.
+                result = {'오류': '운용을 멈췄습니다: ' + managed.safe_error(exc),
+                          '계좌': '모의투자' if broker.MOCK else '실제 계좌'}
+            remember(result)
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+        return
 
     if mode == "--account":
         # 장이 열렸는지와 상관없이 계좌만 봅니다. 주문은 하지 않습니다.

@@ -489,6 +489,7 @@ class IntegrationHelpersTests(unittest.TestCase):
     def test_limits_are_visible_without_opening_the_strategy_file(self):
         # 파일을 못 여는 사람이 자기 돈이 얼마나 걸려 있는지 알 길이 있어야 합니다.
         with (
+            mock.patch.object(strategy, "MANAGED_PORTFOLIO", False),
             mock.patch.object(strategy, "BUY_AMOUNT", 1_000_000),
             mock.patch.object(strategy, "US_BUY_AMOUNT", 600),
             mock.patch.object(strategy, "MAX_HOLDINGS", 5),
@@ -638,7 +639,8 @@ class IntegrationHelpersTests(unittest.TestCase):
         ):
             trade.main()
         # 키가 없으면 파이썬 오류 대신 설정 화면이 열려야 합니다.
-        self.assertIn("account reached", output.getvalue())
+        self.assertIn("RuntimeError", output.getvalue())
+        self.assertNotIn("account reached", output.getvalue())  # 예외 원문은 키가 포함될 수 있어 숨깁니다.
         opened.assert_called_once_with()
 
     def test_trade_prints_usage_when_called_with_no_mode(self):

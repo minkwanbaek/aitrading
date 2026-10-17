@@ -131,7 +131,7 @@ def main():
             fail(f"{field}의 형식이 올바르지 않습니다.")
 
     kr, us = namespace["SYMBOLS"], namespace["US_SYMBOLS"]
-    if not kr and not us:
+    if not kr and not us and not namespace.get("DISCOVERY_ENABLED"):
         fail("살펴볼 종목이 하나도 없습니다. 국내나 미국 중 하나는 있어야 합니다.")
     for code in kr:
         if not (isinstance(code, str) and len(code) == 6 and code.isdigit()):
@@ -198,8 +198,9 @@ def main():
 
     print()
     print("통과했습니다.")
-    print(f"  국내 {', '.join(kr) or '안 함'} · 종목당 {namespace['BUY_AMOUNT']:,}원")
-    print(f"  미국 {', '.join(us) or '안 함'} · 종목당 ${namespace['US_BUY_AMOUNT']:,}")
+    domestic = ', '.join(kr) or ('밸류체인 동적 후보' if namespace.get('DISCOVERY_ENABLED') else '안 함')
+    print(f"  국내 {domestic} · 종목당 최대 {namespace['BUY_AMOUNT']:,}원")
+    print(f"  미국 {', '.join(us)} · 종목당 ${namespace['US_BUY_AMOUNT']:,}" if us else '  미국 안 함')
     if us:
         when = {"pre": "프리마켓", "regular": "정규장", "after": "애프터마켓"}
         print(f"  미국을 볼 시간대 {' · '.join(when[name] for name in sessions)}")

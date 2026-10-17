@@ -200,6 +200,7 @@ def page(saved):
 <p class="when">마지막 실행 {esc(saved.get("마지막실행", "-"))} · {REFRESH}초마다 저절로 새로 그리고
 {STALE // 60}분 넘으면 계좌를 다시 불러옵니다 · <a href="/?load=1">지금 다시 불러오기</a></p>
 <div class="chips">{chips}</div>
+{managed_cards(saved)}
 {f'<p class="alarm">{esc(saved["문제"])}</p>' if saved.get("문제") else ""}
 
 <div class="big">
@@ -225,6 +226,43 @@ def page(saved):
 <footer>이 화면은 보기만 합니다. 여기서는 주문도 설정 변경도 하지 않습니다.<br>
 멈추고 싶으면 예약을 일시 중지하세요.</footer>
 </main></body></html>"""
+
+
+def managed_cards(saved):
+    """사용자 예산·중단 사유·동적 조사 후보를 표시합니다. 주문은 하지 않습니다."""
+    import research
+    out = ''
+    risk = saved.get('운용') or {}
+    if risk:
+        out += '<div class="card"><h2>100만 원 운용 상태</h2>'
+        out += '<p>운용자산 ' + esc(f"{risk.get('운용자산', 0):,}원")
+        out += ' · 누적손익 ' + esc(f"{risk.get('누적손익', 0):+,}원") + '</p>'
+        out += '<p>미체결·확인 중 주문 ' + esc(risk.get('미체결확인중', 0)) + '개</p>'
+        if risk.get('매수중단'):
+            out += '<p class="alarm">신규 매수 중단 · ' + esc(risk['매수중단']) + '</p>'
+        if risk.get('체결동기화대기'):
+            out += '<p class="alarm">체결과 잔고가 일치할 때까지 신규 매수를 기다립니다.</p>'
+        out += '</div>'
+    try:
+        data = research.load()
+    except Exception:
+        return out + '<p class="alarm">후보 자료를 확인해야 합니다. 신규 매수는 보류됩니다.</p>'
+    if data:
+        count = sum(research.eligible(data, c['code']) for c in data['companies'])
+        out += '<div class="card"><h2>밸류체인 관찰 기업</h2><p>'
+        out += esc(f"후보 {len(data['companies'])}개 · 사업·재무 검증 후 매수 검토 가능 {count}개")
+        out += '</p><p class="none">관찰 후보는 매수 추천이 아닙니다. 확인되지 않은 연관성은 가설로 표시합니다.</p>'
+        for theme in data['themes']:
+            out += '<h3>' + esc(theme) + '</h3>'
+            for company in data['companies']:
+                if company['theme'] == theme:
+                    out += '<details><summary>' + esc(company['name'] + ' · ' + company['role']) + '</summary>'
+                    out += '<p>' + esc(company['linkage']) + '</p><p>' + esc(company['risk']) + '</p>'
+                    for source in company['sources']:
+                        out += '<p><a href="' + esc(source['url']) + '" target="_blank" rel="noopener noreferrer">근거 자료</a> · ' + esc(source['summary']) + '</p>'
+                    out += '</details>'
+        out += '</div>'
+    return out
 
 
 def read_board():

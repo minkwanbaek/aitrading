@@ -1,0 +1,382 @@
+{
+  "checked_at": "2026-10-17T15:29:34.992687+00:00",
+  "themes": [
+    "로봇 구동·자동화",
+    "전력망·배전 인프라",
+    "반도체 공정 장비"
+  ],
+  "method": "초기 조사 대상 목록. 확인된 사업과 조사 가설을 구분하며 전부 watch로 시작한다. 인기·수익률 추천 목록이 아니다. 주간 조사로 기업·테마 교체 가능.",
+  "companies": [
+    {
+      "code": "108490",
+      "name": "로보티즈",
+      "theme": "로봇 구동·자동화",
+      "role": "로봇 액추에이터",
+      "linkage": "공식 DYNAMIXEL 제품으로 로봇 관절 구동과의 연관 확인",
+      "risk": "테마 기대가 실제 수주·이익으로 연결되지 않을 수 있음. 재무·가격·거래량 검증 전 매수 제외.",
+      "status": "watch",
+      "sources": [
+        {
+          "url": "https://www.nhplug.com/instruments/m_new_stock.mst",
+          "primary": true,
+          "verified": true,
+          "purpose": "listing",
+          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
+        },
+        {
+          "url": "https://en.robotis.com/model/page.php?co_id=prd_dynamixel",
+          "primary": true,
+          "verified": true,
+          "purpose": "business",
+          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "summary": "공식 DYNAMIXEL 제품으로 로봇 관절 구동과의 연관 확인"
+        }
+      ],
+      "financial_case": "",
+      "invalidation": "실제 사업 연관성 또는 재무 건전성 확인 실패 시 제외"
+    },
+    {
+      "code": "058610",
+      "name": "에스피지",
+      "theme": "로봇 구동·자동화",
+      "role": "모터·감속기",
+      "linkage": "공식 모터 카탈로그 확인. 로봇향 매출 기여는 추가 확인 필요",
+      "risk": "테마 기대가 실제 수주·이익으로 연결되지 않을 수 있음. 재무·가격·거래량 검증 전 매수 제외.",
+      "status": "watch",
+      "sources": [
+        {
+          "url": "https://www.nhplug.com/instruments/m_new_stock.mst",
+          "primary": true,
+          "verified": true,
+          "purpose": "listing",
+          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
+        },
+        {
+          "url": "https://www.spg.co.kr/data/file/prd_manual/3555819813_FeGfiUyr_7b8f261756329fac4f34e33b1b8cb7400ac524dc.pdf",
+          "primary": true,
+          "verified": true,
+          "purpose": "business",
+          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "summary": "공식 모터 카탈로그 확인. 로봇향 매출 기여는 추가 확인 필요"
+        }
+      ],
+      "financial_case": "",
+      "invalidation": "실제 사업 연관성 또는 재무 건전성 확인 실패 시 제외"
+    },
+    {
+      "code": "389500",
+      "name": "에스비비테크",
+      "theme": "로봇 구동·자동화",
+      "role": "감속기 조사 대상",
+      "linkage": "가설: 정밀 구동 부품. 최신 사업보고서로 실제 제품·매출 확인 필요",
+      "risk": "테마 기대가 실제 수주·이익으로 연결되지 않을 수 있음. 재무·가격·거래량 검증 전 매수 제외.",
+      "status": "watch",
+      "sources": [
+        {
+          "url": "https://www.nhplug.com/instruments/m_new_stock.mst",
+          "primary": true,
+          "verified": true,
+          "purpose": "listing",
+          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
+        }
+      ],
+      "financial_case": "",
+      "invalidation": "실제 사업 연관성 또는 재무 건전성 확인 실패 시 제외"
+    },
+    {
+      "code": "140670",
+      "name": "알에스오토메이션",
+      "theme": "로봇 구동·자동화",
+      "role": "서보·모션 제어 조사 대상",
+      "linkage": "가설: 자동화 제어 부품. 공식 제품·매출 확인 필요",
+      "risk": "테마 기대가 실제 수주·이익으로 연결되지 않을 수 있음. 재무·가격·거래량 검증 전 매수 제외.",
+      "status": "watch",
+      "sources": [
+        {
+          "url": "https://www.nhplug.com/instruments/m_new_stock.mst",
+          "primary": true,
+          "verified": true,
+          "purpose": "listing",
+          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
+        }
+      ],
+      "financial_case": "",
+      "invalidation": "실제 사업 연관성 또는 재무 건전성 확인 실패 시 제외"
+    },
+    {
+      "code": "090360",
+      "name": "로보스타",
+      "theme": "로봇 구동·자동화",
+      "role": "산업용 로봇·자동화 조사 대상",
+      "linkage": "가설: 자동화 설비. 공식 수주·매출 확인 필요",
+      "risk": "테마 기대가 실제 수주·이익으로 연결되지 않을 수 있음. 재무·가격·거래량 검증 전 매수 제외.",
+      "status": "watch",
+      "sources": [
+        {
+          "url": "https://www.nhplug.com/instruments/m_new_stock.mst",
+          "primary": true,
+          "verified": true,
+          "purpose": "listing",
+          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
+        }
+      ],
+      "financial_case": "",
+      "invalidation": "실제 사업 연관성 또는 재무 건전성 확인 실패 시 제외"
+    },
+    {
+      "code": "010120",
+      "name": "LS ELECTRIC",
+      "theme": "전력망·배전 인프라",
+      "role": "배전·전력 제어",
+      "linkage": "공식 사이트에서 전력 제품·시스템 및 데이터센터 배전 사업 확인",
+      "risk": "테마 기대가 실제 수주·이익으로 연결되지 않을 수 있음. 재무·가격·거래량 검증 전 매수 제외.",
+      "status": "watch",
+      "sources": [
+        {
+          "url": "https://www.nhplug.com/instruments/m_new_stock.mst",
+          "primary": true,
+          "verified": true,
+          "purpose": "listing",
+          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
+        },
+        {
+          "url": "https://www.ls-electric.com/ko/",
+          "primary": true,
+          "verified": true,
+          "purpose": "business",
+          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "summary": "공식 사이트에서 전력 제품·시스템 및 데이터센터 배전 사업 확인"
+        }
+      ],
+      "financial_case": "",
+      "invalidation": "실제 사업 연관성 또는 재무 건전성 확인 실패 시 제외"
+    },
+    {
+      "code": "267260",
+      "name": "HD현대일렉트릭",
+      "theme": "전력망·배전 인프라",
+      "role": "전력기기 조사 대상",
+      "linkage": "가설: 전력망 장비. 공식 변압기 제품과 수주 확인 필요",
+      "risk": "테마 기대가 실제 수주·이익으로 연결되지 않을 수 있음. 재무·가격·거래량 검증 전 매수 제외.",
+      "status": "watch",
+      "sources": [
+        {
+          "url": "https://www.nhplug.com/instruments/m_new_stock.mst",
+          "primary": true,
+          "verified": true,
+          "purpose": "listing",
+          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
+        }
+      ],
+      "financial_case": "",
+      "invalidation": "실제 사업 연관성 또는 재무 건전성 확인 실패 시 제외"
+    },
+    {
+      "code": "298040",
+      "name": "효성중공업",
+      "theme": "전력망·배전 인프라",
+      "role": "변압기·차단기",
+      "linkage": "공식 전력설비 제품군에서 초고압·배전변압기와 차단기 확인",
+      "risk": "테마 기대가 실제 수주·이익으로 연결되지 않을 수 있음. 재무·가격·거래량 검증 전 매수 제외.",
+      "status": "watch",
+      "sources": [
+        {
+          "url": "https://www.nhplug.com/instruments/m_new_stock.mst",
+          "primary": true,
+          "verified": true,
+          "purpose": "listing",
+          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
+        },
+        {
+          "url": "https://www.hyosungheavyindustries.com/kr",
+          "primary": true,
+          "verified": true,
+          "purpose": "business",
+          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "summary": "공식 전력설비 제품군에서 초고압·배전변압기와 차단기 확인"
+        }
+      ],
+      "financial_case": "",
+      "invalidation": "실제 사업 연관성 또는 재무 건전성 확인 실패 시 제외"
+    },
+    {
+      "code": "103590",
+      "name": "일진전기",
+      "theme": "전력망·배전 인프라",
+      "role": "전선·전력기기 조사 대상",
+      "linkage": "가설: 송배전 밸류체인. 공식 매출·수주 확인 필요",
+      "risk": "테마 기대가 실제 수주·이익으로 연결되지 않을 수 있음. 재무·가격·거래량 검증 전 매수 제외.",
+      "status": "watch",
+      "sources": [
+        {
+          "url": "https://www.nhplug.com/instruments/m_new_stock.mst",
+          "primary": true,
+          "verified": true,
+          "purpose": "listing",
+          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
+        }
+      ],
+      "financial_case": "",
+      "invalidation": "실제 사업 연관성 또는 재무 건전성 확인 실패 시 제외"
+    },
+    {
+      "code": "062040",
+      "name": "산일전기",
+      "theme": "전력망·배전 인프라",
+      "role": "변압기 조사 대상",
+      "linkage": "가설: 배전 밸류체인. 공식 제품·매출 확인 필요",
+      "risk": "테마 기대가 실제 수주·이익으로 연결되지 않을 수 있음. 재무·가격·거래량 검증 전 매수 제외.",
+      "status": "watch",
+      "sources": [
+        {
+          "url": "https://www.nhplug.com/instruments/m_new_stock.mst",
+          "primary": true,
+          "verified": true,
+          "purpose": "listing",
+          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
+        }
+      ],
+      "financial_case": "",
+      "invalidation": "실제 사업 연관성 또는 재무 건전성 확인 실패 시 제외"
+    },
+    {
+      "code": "403870",
+      "name": "HPSP",
+      "theme": "반도체 공정 장비",
+      "role": "반도체 공정 장비",
+      "linkage": "공식 사이트에서 반도체 제조 공정 장비 사업 확인",
+      "risk": "테마 기대가 실제 수주·이익으로 연결되지 않을 수 있음. 재무·가격·거래량 검증 전 매수 제외.",
+      "status": "watch",
+      "sources": [
+        {
+          "url": "https://www.nhplug.com/instruments/m_new_stock.mst",
+          "primary": true,
+          "verified": true,
+          "purpose": "listing",
+          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
+        },
+        {
+          "url": "https://thehpsp.com/ko/",
+          "primary": true,
+          "verified": true,
+          "purpose": "business",
+          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "summary": "공식 사이트에서 반도체 제조 공정 장비 사업 확인"
+        }
+      ],
+      "financial_case": "",
+      "invalidation": "실제 사업 연관성 또는 재무 건전성 확인 실패 시 제외"
+    },
+    {
+      "code": "240810",
+      "name": "원익IPS",
+      "theme": "반도체 공정 장비",
+      "role": "증착·공정장비 조사 대상",
+      "linkage": "가설: 반도체 설비투자 밸류체인. 공식 매출·고객 의존 확인 필요",
+      "risk": "테마 기대가 실제 수주·이익으로 연결되지 않을 수 있음. 재무·가격·거래량 검증 전 매수 제외.",
+      "status": "watch",
+      "sources": [
+        {
+          "url": "https://www.nhplug.com/instruments/m_new_stock.mst",
+          "primary": true,
+          "verified": true,
+          "purpose": "listing",
+          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
+        }
+      ],
+      "financial_case": "",
+      "invalidation": "실제 사업 연관성 또는 재무 건전성 확인 실패 시 제외"
+    },
+    {
+      "code": "036930",
+      "name": "주성엔지니어링",
+      "theme": "반도체 공정 장비",
+      "role": "증착장비 조사 대상",
+      "linkage": "가설: 반도체 공정 장비. 공식 공시·제품 확인 필요",
+      "risk": "테마 기대가 실제 수주·이익으로 연결되지 않을 수 있음. 재무·가격·거래량 검증 전 매수 제외.",
+      "status": "watch",
+      "sources": [
+        {
+          "url": "https://www.nhplug.com/instruments/m_new_stock.mst",
+          "primary": true,
+          "verified": true,
+          "purpose": "listing",
+          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
+        }
+      ],
+      "financial_case": "",
+      "invalidation": "실제 사업 연관성 또는 재무 건전성 확인 실패 시 제외"
+    },
+    {
+      "code": "095610",
+      "name": "테스",
+      "theme": "반도체 공정 장비",
+      "role": "반도체 제조 장비",
+      "linkage": "공식 사이트의 반도체·전력반도체 장비 사업 확인",
+      "risk": "테마 기대가 실제 수주·이익으로 연결되지 않을 수 있음. 재무·가격·거래량 검증 전 매수 제외.",
+      "status": "watch",
+      "sources": [
+        {
+          "url": "https://www.nhplug.com/instruments/m_new_stock.mst",
+          "primary": true,
+          "verified": true,
+          "purpose": "listing",
+          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
+        },
+        {
+          "url": "https://www.hites.co.kr/",
+          "primary": true,
+          "verified": true,
+          "purpose": "business",
+          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "summary": "공식 사이트의 반도체·전력반도체 장비 사업 확인"
+        }
+      ],
+      "financial_case": "",
+      "invalidation": "실제 사업 연관성 또는 재무 건전성 확인 실패 시 제외"
+    },
+    {
+      "code": "319660",
+      "name": "피에스케이",
+      "theme": "반도체 공정 장비",
+      "role": "드라이 스트립 장비",
+      "linkage": "공식 SUPRA 제품 소개에서 포토레지스트 제거 장비 확인",
+      "risk": "테마 기대가 실제 수주·이익으로 연결되지 않을 수 있음. 재무·가격·거래량 검증 전 매수 제외.",
+      "status": "watch",
+      "sources": [
+        {
+          "url": "https://www.nhplug.com/instruments/m_new_stock.mst",
+          "primary": true,
+          "verified": true,
+          "purpose": "listing",
+          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
+        },
+        {
+          "url": "https://www.pskinc.com/producttech/dry_strip.php",
+          "primary": true,
+          "verified": true,
+          "purpose": "business",
+          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "summary": "공식 SUPRA 제품 소개에서 포토레지스트 제거 장비 확인"
+        }
+      ],
+      "financial_case": "",
+      "invalidation": "실제 사업 연관성 또는 재무 건전성 확인 실패 시 제외"
+    }
+  ]
+}

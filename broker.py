@@ -97,6 +97,36 @@ def account():
     return found[0]
 
 
+def domestic_snapshot(act):
+    """공식 잔고조회: 운용 NAV 및 D+2 현금. 필수값 누락은 0으로 대체하지 않습니다."""
+    out = _call('/krstock/inquiry/v1/balance', {
+        'act_no': act, 'bnc_bse_cd': '5', 'ltg_aot_dit_cd': '9',
+        'aet_bse': '1', 'qut_dit_cd': 'KRX', 'aly_qut_cd': '1',
+    })
+    total = out.get('Output_0') or {}
+    for key in ('nas_amt', 'nxt2_dd_dca'):
+        if key not in total or total[key] is None:
+            raise RuntimeError('계좌 평가에 필요한 합계가 없습니다. 신규 주문을 중단합니다.')
+    return {'equity': int(total['nas_amt']), 'cash_d2': int(total['nxt2_dd_dca'])}
+
+
+def domestic_orders(act, day):
+    """정본 dailyOrderExecution의 전체 주문·부분체결·취소 수량 조회."""
+    out = _call('/krstock/inquiry/v1/dailyOrderExecution', {
+        'act_no': act, 'orr_dt': day, 'orr_mkt_cd': '00', 'ost_cns_dit': '0',
+    })
+    rows = out.get('Output_0') or []
+    if not isinstance(rows, list):
+        raise RuntimeError('주문 내역 형식이 올바르지 않습니다.')
+    if not rows:
+        message = str(out.get('rsp_msg') or (out.get('message') or {}).get('rsp_msg') or '')
+        allowed = ('조회가 완료', '정상', '조회된 내역이 없', '조회된 내용이 없',
+                   '조회할 내역이 없', '출력할 자료가 없', '조회된 데이터가 없', '조회할 자료가 없')
+        if not any(word in message for word in allowed):
+            raise RuntimeError('주문 내역이 없는 정상 응답인지 확인하지 못했습니다.')
+    return rows
+
+
 def quote(code):
     """국내 시세 한 번에. NH가 179개 필드를 주는데 현재가만 쓰면 아깝습니다.
 
