@@ -188,6 +188,13 @@ class ResearchTests(unittest.TestCase):
         self.assertIn('5종목', text)
         self.assertEqual(strategy.US_SYMBOLS, [])
 
+    def test_user_stop_loss_at_four_percent_and_not_before(self):
+        m = {'held': True, 'pnl_pct': -4.0, 'ai': None}
+        self.assertEqual(strategy.STOP_LOSS_PCT, -4.0)
+        self.assertEqual(strategy.decide(m)[0], 'sell')
+        m['pnl_pct'] = -3.99
+        self.assertEqual(strategy.decide(m)[0], 'hold')
+
 
 class CycleTests(unittest.TestCase):
     def test_loss_limit_persists_even_when_market_closed_and_notifies_once(self):
@@ -213,7 +220,7 @@ class CycleTests(unittest.TestCase):
         s['last_cash'] = 499900000
         s['orders'] = [dict(order(closed=True), filled=2, amount=100000)]
         s['positions'] = {'108490': {'opened_at': managed.now().isoformat(), 'reviewed_at': None}}
-        held = {'108490': {'name': '테스트', 'qty': 2, 'price': 47000, 'avg': 50000, 'pnl_pct': -6}}
+        held = {'108490': {'name': '테스트', 'qty': 2, 'price': 47750, 'avg': 50000, 'pnl_pct': -4.5}}
         m = dict(held['108490'], code='108490', held=True, market='kr', currency='KRW')
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / 'state.json'
@@ -230,7 +237,7 @@ class CycleTests(unittest.TestCase):
                   mock.patch.object(trade, 'approved', return_value=''),
                   mock.patch.object(managed.telegram, 'notify')):
                 result = managed.run('test', '--scan')
-                send.assert_called_once_with('test', 'sell', '108490', 2, 47000)
+                send.assert_called_once_with('test', 'sell', '108490', 2, 47750)
                 self.assertIn('오류', result['조사'])
 
     def test_engine_preview_at_loss_threshold_never_writes_state_or_sends(self):

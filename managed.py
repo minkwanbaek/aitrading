@@ -326,7 +326,7 @@ def run(act, mode, calls=None):
             call = (calls or {}).get(code)
             forced = m['held'] and m['pnl_pct'] <= strategy.STOP_LOSS_PCT
             if forced:
-                action, reason = 'sell', f'평균 매입가 대비 {m["pnl_pct"]:+.2f}%: -5% 손절'
+                action, reason = 'sell', f'평균 매입가 대비 {m["pnl_pct"]:+.2f}%: {strategy.STOP_LOSS_PCT:g}% 손절'
                 call = {'reason': reason}
             elif mode == '--do' and valid_call(call):
                 m['ai'] = call
