@@ -103,6 +103,10 @@
 
 ## aitrading 로컬 개발
 
+- 작업을 시작할 때 `PROJECT_CONTEXT.md`의 사용자 요구사항·상담 기록·공식 참고 URL을
+  먼저 확인합니다. 관련 기능을 변경할 때 해당 공식 URL의 최신 규격을 확인합니다.
+- 총 운용 예산은 100만 원으로 확인됐지만 전략에는 아직 반영하지 않았습니다.
+  남은 상담과 사용자 최종 동의 전에 전략을 확정하거나 예약을 시작하지 않습니다.
 - Windows에서는 `.venv/Scripts/python.exe`를 사용합니다. 위 Linux 실행 예시는
   Windows에서 그대로 실행하지 말고 PowerShell에 맞춰 실행합니다.
 - Windows 백그라운드 프로세스는 `Start-Process -WindowStyle Hidden`으로 띄웁니다.
