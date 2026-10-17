@@ -395,7 +395,7 @@ def remember(result):
         # 막혀 있으면 화면 맨 위에 그대로 띄웁니다. 다음 회차가 잘 돌면 지워집니다.
         "문제": result.get("오류", ""),
     }
-    for field in ("계좌", "지금", "국내장", "미국장", "요약", "운용", "조사", "투표"):
+    for field in ("계좌", "지금", "국내장", "미국장", "요약", "운용", "조사", "투표", "미체결관리"):
         if field in result:
             saved[field] = result[field]
     if "지금" in result:

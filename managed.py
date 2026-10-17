@@ -182,6 +182,49 @@ def equity(state, snapshot):
     return strategy.TOTAL_BUDGET + snapshot['equity'] - state['baseline_equity']
 
 
+def manage_pending(act, state, path):
+    """1시간 된 확인된 잔량을 모의에서 한 번만 취소 요청. 원장은 조회 확인 전까지 예약 유지."""
+    import trade
+    messages = []
+    for order in active_orders(state):
+        try:
+            age = now() - research.timestamp(order['submitted_at'])
+        except (KeyError, ValueError, TypeError, AttributeError):
+            messages.append(order['code'] + ': 주문 시각 미확인, 자동 취소 보류')
+            continue
+        if age < dt.timedelta(hours=1):
+            continue
+        if order.get('cancel_requested_at'):
+            messages.append(order['code'] + ': 취소 요청 확인 대기. 잔량 예산 유지·재전송 금지')
+            continue
+        if order.get('uncertain') or not order.get('row_id') or not order.get('market_order_no'):
+            message = order['code'] + ': 주문 접수·대조가 불명확해 직접 취소·재전송하지 않음'
+        elif not broker.MOCK or order['day'] != now().astimezone(trade.SEOUL).strftime('%Y%m%d'):
+            message = order['code'] + ': 실전 또는 이전 거래일 미체결은 확인 필요. 자동 취소하지 않음'
+        else:
+            remaining = order['qty'] - order.get('filled', 0) - order.get('cancelled', 0)
+            if remaining < 1:
+                messages.append(order['code'] + ': 잔량 대조 필요, 취소 보류')
+                continue
+            order['cancel_requested_at'] = now().isoformat()
+            save(path, state)  # 취소도 응답 유실 시 재전송하지 않도록 호출 전에 기록.
+            try:
+                order['cancel_ack_no'] = str(broker.cancel_mock(act, order['code'], order['market_order_no'], remaining))
+                message = order['code'] + f': {remaining}주 잔량 취소 요청. 확정 조회 전까지 예산 유지'
+            except Exception:
+                message = order['code'] + ': 취소 접수 여부 불명확. 예약 유지·자동 재전송 금지'
+            save(path, state)
+        messages.append(message)
+        if not order.get('pending_alerted_at'):
+            order['pending_alerted_at'] = now().isoformat()
+            save(path, state)
+            try:
+                telegram.notify('NH 미체결 점검: ' + message)
+            except Exception:
+                pass
+    return messages
+
+
 def review_due(position, clock=None):
     date = position.get('reviewed_at') or position['opened_at']
     return (clock or now()) - research.timestamp(date) >= dt.timedelta(days=strategy.REVIEW_DAYS)
@@ -331,9 +374,14 @@ def run(act, mode, calls=None):
     if not trade.kr_open():
         result['요약'] = '국내장이 닫혀 주문하지 않았습니다.'
         return result
+    if mode == '--scan':
+        result['미체결관리'] = manage_pending(act, state, path)
     if mode == '--do' and not isinstance(calls, dict):
         raise GuardError('종목별 판단 파일이 필요합니다.')
-    codes = sorted(set(held) | set(rows)) if mode != '--do' else sorted(set(held) | set(calls))
+    if mode == '--scan':
+        codes = sorted(held)  # 위험 점검은 보유만 조회. 후보 시세는 직후 수집 단계에서 한 번 조회.
+    else:
+        codes = sorted(set(held) | set(rows)) if mode != '--do' else sorted(set(held) | set(calls))
     for code in codes:
         if code in held and not any(o['code'] == code and o['side'] == 'buy' for o in state['orders']):
             result['건너뜀'].append(f'{code}: 이 프로그램 외의 보유 종목이므로 자동 매도하지 않음')

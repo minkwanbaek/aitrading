@@ -234,7 +234,15 @@ def managed_cards(saved):
     out = ''
     import voting
     out += '<div class="card"><h2>독립 세 AI 결정서</h2>'
-    out += '<p class="none">평일 07:30 자료 수집 → 08:00 독립 기업선정 → 09~15시 매시간 모의매매</p>'
+    out += '<p class="none">평일 07:30 기업 변화 조사 · 09~15시 매시간 수집 → 필요할 때 세 AI 판단 → 모의매매</p>'
+    try:
+        gate = voting.read(voting.ROOT / '.cache' / 'gate.json')
+        stamp = research.timestamp(gate['checked_at']).astimezone(trade.SEOUL).strftime('%m/%d %H:%M')
+        title = {'request': '독립 판단 요청', 'skip': 'AI 호출 생략', 'blocked': '자료 문제로 판단 보류'}[gate['decision']]
+        out += '<p>' + esc(stamp + ' · ' + title) + '</p><p>' + esc(' / '.join(gate['reasons'])) + '</p>'
+        out += '<p class="none">생략은 새로운 보유 의견이 아닙니다. 아래는 마지막 실제 AI 판단입니다.</p>'
+    except Exception:
+        pass
     try:
         plan = voting.load_plan()
         out += '<p>A · B · C 유효 응답 3개 · 2표 이상 일치 시 채택</p>'
@@ -257,6 +265,8 @@ def managed_cards(saved):
         out += '<p>유효한 결정서가 없어 신규 주문을 보류합니다. 보유 종목 손절 점검은 계속합니다.</p>'
     out += '<p class="none">같은 모델의 공통 오류는 투표로 제거되지 않습니다. 시간마다 현재가·예산·손절을 다시 확인합니다.</p></div>'
     risk = saved.get('운용') or {}
+    for message in saved.get('미체결관리', []) if risk.get('미체결확인중', 0) else []:
+        out += '<p class="alarm">' + esc(message) + '</p>'
     if risk:
         out += '<div class="card"><h2>100만 원 운용 상태</h2>'
         out += '<p>운용자산 ' + esc(f"{risk.get('운용자산', 0):,}원")

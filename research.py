@@ -35,6 +35,8 @@ def validate(data, clock=None):
     checked = timestamp(data['checked_at'])
     if checked > clock + dt.timedelta(minutes=5):
         raise ValueError('미래의 조사 시각은 허용하지 않습니다.')
+    if data.get('full_reviewed_at') and timestamp(data['full_reviewed_at']) > checked:
+        raise ValueError('전체 검토 시각은 마지막 조사 시각보다 미래일 수 없습니다.')
     themes = data.get('themes', [])
     if len(themes) != 3 or len(set(themes)) != 3 or any(not isinstance(t, str) or not t.strip() for t in themes):
         raise ValueError('서로 다른 조사 테마 3개가 필요합니다.')
@@ -83,6 +85,10 @@ def fresh(data, clock=None):
     return bool(data) and (clock or now()) - timestamp(data['checked_at']) <= dt.timedelta(days=strategy.RESEARCH_DAYS)
 
 
+def full_review_due(data, clock=None):
+    return not data or (clock or now()) - timestamp(data.get('full_reviewed_at') or data['checked_at']) >= dt.timedelta(days=7)
+
+
 def companies(data):
     return {row['code']: row for row in (data or {}).get('companies', [])}
 
@@ -121,6 +127,7 @@ def verify_instruments(data):
 def status():
     data = load()
     return {'조사필요': not fresh(data),
+            '전체검토필요': full_review_due(data),
             '테마': (data or {}).get('themes', []),
             '후보수': len(companies(data)),
             '매수검토가능': sum(eligible(data, code) for code in companies(data)),
@@ -130,6 +137,10 @@ def status():
 def main():
     if len(sys.argv) == 3 and sys.argv[1] == '--import':
         data = validate(json.loads(Path(sys.argv[2]).read_text(encoding='utf-8-sig')))
+        if not data.get('full_reviewed_at'):
+            previous = load()
+            data['full_reviewed_at'] = (previous or {}).get('full_reviewed_at') or (previous or data)['checked_at']
+        validate(data)
         if not fresh(data):
             raise ValueError('오래된 조사 결과는 등록하지 않습니다.')
         verify_instruments(data)

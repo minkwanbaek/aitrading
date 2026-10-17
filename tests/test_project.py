@@ -763,9 +763,9 @@ class IntegrationHelpersTests(unittest.TestCase):
         # 실제로 한 번 어긋나서 화면에는 없어진 공시 얘기가 남아 있었습니다.
         text = setup.schedule_text()
         self.assertIn("trade.py --scan", text)
-        self.assertIn("trade.py --do", text)
-        self.assertIn(".cache/decision-plan.json", text)
-        self.assertIn("기업 판단·코드 수정은 하지 않는다", text)
+        self.assertIn("cycle.py --gate", text)
+        self.assertIn("cycle.py --execute", text)
+        self.assertIn("collection-task.md", text)
         page = setup.PAGE.replace("%%SCHEDULE%%", text).replace("%%POINTER%%", setup.POINTER)
         self.assertIn("trade.py --scan", page)
         self.assertNotIn("%%SCHEDULE%%", page)

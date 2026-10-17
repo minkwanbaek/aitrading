@@ -112,16 +112,20 @@
 - 예산·체결 대조·중단 상태는 `managed.py`가 담당합니다. 주문을 위해 이 모듈을
   직접 호출하거나 `.cache/mock-*.json`·`live-*.json`을 고치거나 지우지 않습니다.
 - 예약은 모의 전용이며 `schedule.txt`를 따릅니다. 실전 전환은 별도 사용자 동의가 필요합니다.
-- 데이터 조사·기업 발굴·시세 조회는 ‘NH 데이터수집’ 예약과 `collection-task.md`가 담당합니다.
-  ‘NH 기업선정’은 `research-task.md`에 따라 수집 완료본만 읽어 투표·배분합니다. 검색·추가 조회를 하지 않습니다.
-  ‘NH 자동매매’는 선정 결과를 읽기만 하며 기업 발굴이나 목록 변경을 하지 않습니다.
-  세 예약 모두 새 코드를 작성하거나 기존 코드를 수정하지 않습니다.
+- ‘NH 기업발굴’은 discovery-task.md로 매일 변화 조사·7일마다 전체 테마 검토를 합니다.
+  ‘NH 자동매매’는 schedule.txt로 매시간 위험→collection-task.md 수집→cycle.py 점검→필요 시
+  research-task.md 독립 투표→cycle.py 실행→체결 확인을 순서대로 수행합니다.
+  기존 별도 ‘NH 기업선정’ 예약은 중지해 중복 실행을 막습니다. 두 활성 예약은 코드를 고치지 않습니다.
   collection.py --publish는 수집 전용, --status는 로컬 읽기 전용입니다. 선정은 수집 후 90분 이내의
   당일 완료본만 사용합니다. 누락·실패 시 선정을 보류하며 대신 수집하거나 시각만 갱신하지 않습니다.
-- 기업선정 예약은 사용자 승인에 따라 A/B/C를 fork_turns="none"인 독립 세션 세 개로 실행합니다.
+- 판단 필요성 점검이 request일 때만 A/B/C를 fork_turns="none"인 독립 세션 세 개로 실행합니다.
   세 판단자는 voter-instructions.md와 동일한 고정 input.json만 읽고 서로의 답을 보지 않습니다.
   voting.py로 집계하고 .cache/decision-plan.json을 전달합니다. 매매 예약은 판단을 새로 만들지 않습니다.
   단일 판단 파일·누락을 보유 표로 바꾼 결과·만료 결정서를 실행하거나 시각만 갱신하지 않습니다.
+  skip은 새 hold 의견이 아닙니다. request 후 실패하면 이전 결정서로 대신 주문하지 않습니다.
+  일반 장중 주문은 cycle.py --execute로 연결하며 trade.py --do 직접 호출로 검사를 우회하지 않습니다.
+- 확인된 당일 모의 미체결은 1시간 후 잔량 취소를 한 번 요청합니다. 취소 확정 전 예약 유지,
+  접수/취소 불명 시 재전송 금지입니다. 실전·이전 거래일 자동 취소는 하지 않습니다.
 - Windows에서는 `.venv/Scripts/python.exe`를 사용합니다. 위 Linux 실행 예시는
   Windows에서 그대로 실행하지 말고 PowerShell에 맞춰 실행합니다.
 - Windows 백그라운드 프로세스는 `Start-Process -WindowStyle Hidden`으로 띄웁니다.

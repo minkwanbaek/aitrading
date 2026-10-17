@@ -60,6 +60,16 @@ def prepare(news=None):
     if not broker.MOCK:
         raise managed.GuardError('현재 기업선정 예약은 모의투자 전용입니다.')
     news = news or {}
+    news_status, news_checked, failed_codes = 'not_checked', None, []
+    if 'items' in news:
+        news_status = news.get('status')
+        news_checked = news.get('checked_at')
+        if news_status not in ('ok', 'error') or not news_checked or not dt.timedelta(0) <= managed.now() - research.timestamp(news_checked) <= dt.timedelta(hours=1):
+            raise managed.GuardError('이번 회차 뉴스 수집 상태·확인 시각이 필요합니다.')
+        failed_codes = news.get('failed_codes', [])
+        if not isinstance(failed_codes, list) or not isinstance(news['items'], dict):
+            raise managed.GuardError('뉴스 수집 결과 형식이 잘못됐습니다.')
+        news = news['items']
     catalog = research.load()
     if not catalog:
         raise managed.GuardError('기업선정 자료가 필요합니다.')
@@ -86,6 +96,8 @@ def prepare(news=None):
             available = 0
         stocks = {}
         rows = research.companies(catalog)
+        if news_status == 'ok':
+            failed_codes = sorted(set(failed_codes) | (set(rows) | set(held)) - set(news))
         for code in sorted(set(rows) | set(held)):
             articles = news.get(code, [])
             if not isinstance(articles, list) or any(
@@ -98,7 +110,19 @@ def prepare(news=None):
             try:
                 m = trade.context('kr', code, held, snap['cash_d2'])
                 position = state['positions'].get(code)
+                closes = m.get('closes', [])
+                rsi = strategy.rsi(closes)
+                macd, signal = strategy.macd(closes)
+                signals = {'above_ma' + str(days): (m['price'] > strategy.moving_average(closes, days)
+                           if strategy.moving_average(closes, days) is not None else None) for days in (5, 20)}
+                signals.update(rsi_over_70=(rsi >= 70 if rsi is not None else None),
+                               rsi_over_75=(rsi >= 75 if rsi is not None else None),
+                               macd_positive=(macd > signal if macd is not None and signal is not None else None),
+                               liquid=m.get('turnover', 0) >= strategy.MIN_TURNOVER_KRW,
+                               near_high=(m['price'] >= m.get('high_52w', 0) * strategy.MAX_NEAR_HIGH_PCT / 100
+                                          if m.get('high_52w') else None))
                 stocks[code] = {'facts': trade.facts(m), 'price': m['price'],
+                                'signals': signals,
                                 'observed_at': managed.now().isoformat(),
                                 'held': code in held, 'company': rows.get(code), 'news': articles,
                                 'eligible': research.eligible(catalog, code),
@@ -113,6 +137,11 @@ def prepare(news=None):
         data = {'version': 1, 'created_at': created.isoformat(), 'expires_at': expires.isoformat(),
                 'account_id': managed.state_path(act).stem, 'policy': policy(),
                 'account': account['운용'], 'market_open': trade.kr_open(),
+                'news_status': news_status, 'news_checked_at': news_checked, 'news_failed_codes': failed_codes,
+                'execution': [{'code': o['code'], 'side': o['side'], 'qty': o['qty'],
+                               'filled': o.get('filled', 0), 'cancelled': o.get('cancelled', 0),
+                               'closed': o.get('closed', False), 'uncertain': o.get('uncertain', False),
+                               'cancel_requested': bool(o.get('cancel_requested_at'))} for o in state['orders']],
                 'price_note': '조회 시각의 NH 시세. 장 시작 전·휴장에는 직전 거래 시세이며 실시간 장중 시세가 아님.',
                 'available_krw': int(available),
                 'available_slots': max(0, strategy.MAX_HOLDINGS - len(set(held) | {o['code'] for o in pending if o['side'] == 'buy'})),

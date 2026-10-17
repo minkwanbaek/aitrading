@@ -295,6 +295,22 @@ def order(act, side, code, qty, limit_price):
     return out.get("mkt_orr_no")
 
 
+def cancel_mock(act, code, market_order_no, remaining):
+    """모의 계좌의 확인된 미체결 잔량만 취소 요청. 취소 확정은 별도 조회가 필요합니다."""
+    if not MOCK:
+        raise RuntimeError('자동 잔량 취소는 현재 모의 환경 전용입니다.')
+    number = str(market_order_no)
+    if not number.isdigit() or int(number) <= 0 or len(str(code)) != 6 or not str(code).isdigit():
+        raise ValueError('확인된 시장주문번호와 국내 종목코드가 필요합니다.')
+    if type(remaining) is not int or remaining < 1:
+        raise ValueError('취소할 잔량이 필요합니다.')
+    out = _call('/krstock/order/v1/cancel', {'act_no': act, 'iem_cd': code,
+                 'org_mkt_orr_no': int(number), 'all_pat_dit_cd': '2', 'cor_qty': remaining}).get('Output_0') or {}
+    if not out.get('mkt_orr_no'):
+        raise RuntimeError('취소 접수 응답을 확인하지 못했습니다.')
+    return out['mkt_orr_no']
+
+
 # ── 미국장 ────────────────────────────────────────────────────────────
 # 국내와 API가 완전히 달라서(gbstock) 함수를 따로 둡니다. 필드 이름도 다릅니다.
 
