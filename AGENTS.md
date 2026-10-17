@@ -110,6 +110,9 @@
 - 예산·체결 대조·중단 상태는 `managed.py`가 담당합니다. 주문을 위해 이 모듈을
   직접 호출하거나 `.cache/mock-*.json`·`live-*.json`을 고치거나 지우지 않습니다.
 - 예약은 모의 전용이며 `schedule.txt`를 따릅니다. 실전 전환은 별도 사용자 동의가 필요합니다.
+- 기업 발굴은 별도 ‘NH 기업선정’ 예약과 `research-task.md`로 분리합니다.
+  ‘NH 자동매매’는 선정 결과를 읽기만 하며 기업 발굴이나 목록 변경을 하지 않습니다.
+  두 예약 모두 새 코드를 작성하거나 기존 코드를 수정하지 않습니다.
 - Windows에서는 `.venv/Scripts/python.exe`를 사용합니다. 위 Linux 실행 예시는
   Windows에서 그대로 실행하지 말고 PowerShell에 맞춰 실행합니다.
 - Windows 백그라운드 프로세스는 `Start-Process -WindowStyle Hidden`으로 띄웁니다.
