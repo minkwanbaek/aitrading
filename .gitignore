@@ -1,0 +1,21 @@
+# Credentials: commit only the empty example.
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+*.pem
+*.key
+
+# Local runtime and account data
+.venv/
+__pycache__/
+*.py[cod]
+.cache/
+*.log
+*.db
+*.db-*
+*.sqlite*
+
+# Editors
+.idea/
+.vscode/
