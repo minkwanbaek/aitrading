@@ -234,6 +234,7 @@ def managed_cards(saved):
     out = ''
     import voting
     out += '<div class="card"><h2>독립 세 AI 결정서</h2>'
+    out += '<p class="none">평일 07:30 자료 수집 → 08:00 독립 기업선정 → 09~15시 매시간 모의매매</p>'
     try:
         plan = voting.load_plan()
         out += '<p>A · B · C 유효 응답 3개 · 2표 이상 일치 시 채택</p>'

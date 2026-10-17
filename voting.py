@@ -257,6 +257,10 @@ def main():
     elif args.aggregate:
         source, *files = args.aggregate
         data = validate_input(read(source))
+        import collection
+        _, published = collection.load_current()
+        if published['input_id'] != data['input_id']:
+            raise managed.GuardError('현재 수집 완료본과 다른 입력입니다. 기업선정을 보류합니다.')
         votes = []
         for label, file in zip(VOTERS, files):
             try:
