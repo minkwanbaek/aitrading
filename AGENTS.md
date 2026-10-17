@@ -106,6 +106,8 @@
 - Windows에서는 `.venv/Scripts/python.exe`를 사용합니다. 위 Linux 실행 예시는
   Windows에서 그대로 실행하지 말고 PowerShell에 맞춰 실행합니다.
 - Windows 백그라운드 프로세스는 `Start-Process -WindowStyle Hidden`으로 띄웁니다.
-- `autotrade.py`는 기존 업비트 실거래 코드입니다. NH 연결 확인을 위해 실행하지 않습니다.
+- 주 개발 기준은 루트의 조코딩 NH 예제입니다. 루트 `requirements.txt`는 NH용입니다.
+- `legacy/upbit/`는 이전 업비트 코드 원본 보관용입니다. NH 개발 중 실행하거나
+  이 폴더의 의존성을 NH 가상환경에 설치하지 않습니다.
 - 키·토큰·계좌번호가 담긴 API 응답 전체를 채팅이나 로그에 출력하지 않습니다.
 - 사용자 맞춤 전략이 정해지기 전에는 예제 주문과 예약을 자동 시작하지 않습니다.

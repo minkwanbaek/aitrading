@@ -1,12 +1,10 @@
 # aitrading
 
-기존 업비트 자동매매 프로젝트를 기반으로 NH투자증권 Namuh PLUG 주식 자동매매 기능을 개발합니다.
+조코딩의 NH투자증권 Namuh PLUG 자동매매 예제를 기준으로 개발하는 프로젝트입니다.
 
 ## 현재 구성
 
-- `autotrade.py`: 기존 업비트 비트코인 자동매매. 실행하면 실제 주문 경로에 진입할 수 있습니다.
-- `streamlit_app.py`: 기존 비트코인 거래 기록 조회 화면.
-- `strategy.txt`: 기존 비트코인 전략 설명.
+- `legacy/upbit/`: 기존 업비트 프로그램·조회 화면·전략·의존성을 원본 그대로 보관.
 - `.env.example`: NH 설정용 빈 양식.
 - `CREDENTIALS.md`: 로컬 키 입력 및 개발 중 설정 참조 방법.
 
@@ -19,8 +17,8 @@ NH 예제 코드와 검사 코드를 가져왔습니다. 예약은 아직 등록
 `trade.py`는 조회·검증·주문, `telegram.py`는 실전 주문 승인,
 `board.py`는 현황 화면입니다. 예약 지침은 `schedule.txt`를 사용합니다.
 
-NH 전용 의존성은 `requirements-nh.txt`에 분리했습니다. 기존 업비트용
-`requirements.txt` 및 프로그램은 유지합니다. 로컬 `.venv`는 NH 개발용입니다.
+루트 `requirements.txt`는 조코딩 예제의 NH 의존성입니다. 로컬 `.venv`도 NH 개발용입니다.
+기존 업비트 의존성은 `legacy/upbit/requirements.txt`에 분리해 보관합니다.
 
 현재 종목·금액·손절·익절은 원본 예제 값이며 사용자 맞춤 전략은 아직 정하지 않았습니다.
 실전 계좌에서는 손절·익절 매도도 Telegram 승인을 거칩니다.
