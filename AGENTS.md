@@ -115,6 +115,10 @@
 - 기업 발굴은 별도 ‘NH 기업선정’ 예약과 `research-task.md`로 분리합니다.
   ‘NH 자동매매’는 선정 결과를 읽기만 하며 기업 발굴이나 목록 변경을 하지 않습니다.
   두 예약 모두 새 코드를 작성하거나 기존 코드를 수정하지 않습니다.
+- 기업선정 예약은 사용자 승인에 따라 A/B/C를 fork_turns="none"인 독립 세션 세 개로 실행합니다.
+  세 판단자는 voter-instructions.md와 동일한 고정 input.json만 읽고 서로의 답을 보지 않습니다.
+  voting.py로 집계하고 .cache/decision-plan.json을 전달합니다. 매매 예약은 판단을 새로 만들지 않습니다.
+  단일 판단 파일·누락을 보유 표로 바꾼 결과·만료 결정서를 실행하거나 시각만 갱신하지 않습니다.
 - Windows에서는 `.venv/Scripts/python.exe`를 사용합니다. 위 Linux 실행 예시는
   Windows에서 그대로 실행하지 말고 PowerShell에 맞춰 실행합니다.
 - Windows 백그라운드 프로세스는 `Start-Process -WindowStyle Hidden`으로 띄웁니다.

@@ -232,6 +232,29 @@ def managed_cards(saved):
     """사용자 예산·중단 사유·동적 조사 후보를 표시합니다. 주문은 하지 않습니다."""
     import research
     out = ''
+    import voting
+    out += '<div class="card"><h2>독립 세 AI 결정서</h2>'
+    try:
+        plan = voting.load_plan()
+        out += '<p>A · B · C 유효 응답 3개 · 2표 이상 일치 시 채택</p>'
+        created = research.timestamp(plan['input']['created_at']).astimezone(trade.SEOUL).strftime('%m/%d %H:%M')
+        expires = research.timestamp(plan['input']['expires_at']).astimezone(trade.SEOUL).strftime('%m/%d %H:%M')
+        out += '<p>입력 ' + esc(created) + ' · 만료 ' + esc(expires) + ' (한국시간)</p>'
+        for code, call in plan['actions'].items():
+            stock = plan['input']['stocks'][code]
+            name = (stock.get('company') or {}).get('name', code)
+            out += '<details><summary>' + esc(name + ' · ' + {'buy': '매수', 'sell': '매도', 'hold': '보유·관찰'}[call['decision']])
+            if call.get('budget_krw'):
+                out += ' · ' + esc(f"{call['budget_krw']:,}원 이내")
+            out += '</summary><p>' + esc(call['reason']) + '</p>'
+            if call.get('max_buy_price'):
+                out += '<p>1주 매수 가격 상한 ' + esc(f"{call['max_buy_price']:,}원") + '</p>'
+            for vote in call['votes']:
+                out += '<p>' + esc(vote['voter'] + ': ' + vote['decision'] + ' · ' + vote['reason']) + '</p>'
+            out += '</details>'
+    except Exception:
+        out += '<p>유효한 결정서가 없어 신규 주문을 보류합니다. 보유 종목 손절 점검은 계속합니다.</p>'
+    out += '<p class="none">같은 모델의 공통 오류는 투표로 제거되지 않습니다. 시간마다 현재가·예산·손절을 다시 확인합니다.</p></div>'
     risk = saved.get('운용') or {}
     if risk:
         out += '<div class="card"><h2>100만 원 운용 상태</h2>'

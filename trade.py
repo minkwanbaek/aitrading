@@ -395,7 +395,7 @@ def remember(result):
         # 막혀 있으면 화면 맨 위에 그대로 띄웁니다. 다음 회차가 잘 돌면 지워집니다.
         "문제": result.get("오류", ""),
     }
-    for field in ("계좌", "지금", "국내장", "미국장", "요약", "운용", "조사"):
+    for field in ("계좌", "지금", "국내장", "미국장", "요약", "운용", "조사", "투표"):
         if field in result:
             saved[field] = result[field]
     if "지금" in result:
@@ -832,7 +832,7 @@ def read_calls(argv):
 USAGE = """이 프로그램은 Codex 예약이 1시간마다 부릅니다.
 
   python trade.py --scan   지금 상황을 살펴 판단이 필요한 종목을 알려 줍니다
-  python trade.py --do ..  Codex가 정한 판단대로 주문합니다
+  python trade.py --do ..  검증된 독립 세 AI 결정서대로 주문합니다
   python trade.py --preview  아무것도 주문하지 않고 지금 상황만 보여 줍니다
   python trade.py --account  지금 계좌에 무엇이 들어 있는지만 보여 줍니다
 
@@ -876,7 +876,10 @@ def main():
         import managed
         with managed.cycle_lock():
             try:
-                calls = read_calls(argv[1:]) if mode == '--do' else None
+                try:
+                    calls = read_calls(argv[1:]) if mode == '--do' else None
+                except (ValueError, OSError):
+                    calls = {}  # 결정서 오류여도 보유 종목 손절 점검은 계속합니다.
                 result = managed.run(act, mode, calls)
             except Exception as exc:
                 # 인증·계좌 응답 원문은 노출하지 않습니다.

@@ -221,10 +221,17 @@ def submit(act, state, path, snapshot, held, m, action, call=None, dry=False):
     call = call or {}
     code = m['code']
     reason = call.get('reason', '손절 기준 도달')
+    plan_id = call.get('plan_id')
+    if plan_id and any(o.get('plan_id') == plan_id and o['code'] == code for o in state['orders']):
+        return trade.noted(trade.label(m['name'], code), '이미 사용한 결정서: 재주문하지 않음', reason, '안 함')
+    if call.get('expires_at') and now() >= research.timestamp(call['expires_at']):
+        return trade.noted(trade.label(m['name'], code), '결정서 만료로 주문 보류', reason, '안 함')
     if any(o['code'] == code for o in active_orders(state)):
         return trade.noted(trade.label(m['name'], code), '미체결·확인 중 주문이 있어 건너뜀', reason, '안 함')
     price = m['price']
     if action == 'buy':
+        if plan_id and price > call['max_buy_price']:
+            return trade.noted(trade.label(m['name'], code), '결정서의 매수 상한 가격을 넘어 주문 보류', reason, '안 함')
         requested = call.get('budget_krw', 150_000)
         if type(requested) is not int or not 0 < requested <= strategy.BUY_AMOUNT:
             raise GuardError('종목별 매수 금액은 1~200,000원의 정수여야 합니다.')
@@ -239,11 +246,15 @@ def submit(act, state, path, snapshot, held, m, action, call=None, dry=False):
     denied = trade.approved(act, m, action, qty, price, reason)
     if denied:
         return trade.noted(trade.label(m['name'], code), denied, reason, '안 함')
+    if call.get('expires_at') and now() >= research.timestamp(call['expires_at']):
+        return trade.noted(trade.label(m['name'], code), '승인 대기 중 결정서 만료로 주문 보류', reason, '안 함')
     # 응답을 못 받았어도 재전송하지 않도록 API 호출 전에 예약을 디스크에 남깁니다.
     order = {'code': code, 'side': action, 'qty': qty, 'price': price,
              'day': now().astimezone(trade.SEOUL).strftime('%Y%m%d'),
              'submitted_at': now().isoformat(), 'filled': 0, 'amount': 0,
              'cancelled': 0, 'closed': False, 'uncertain': True}
+    if plan_id:
+        order['plan_id'] = plan_id
     state['orders'].append(order)
     save(path, state)
     try:
@@ -263,6 +274,15 @@ def submit(act, state, path, snapshot, held, m, action, call=None, dry=False):
 
 def run(act, mode, calls=None):
     import trade
+    plan = None
+    plan_error = ''
+    if mode == '--do':
+        import voting
+        try:
+            plan = voting.validate_plan(calls, act)
+        except Exception as exc:
+            plan_error = safe_error(exc) if isinstance(exc, GuardError) else '유효한 세 AI 결정서가 필요합니다. 단일 판단은 실행하지 않습니다.'
+        calls = plan['actions'] if plan else {}
     dry = mode in ('--preview', '--account')
     snapshot = broker.domestic_snapshot(act)
     held = broker.holdings(act)
@@ -301,6 +321,10 @@ def run(act, mode, calls=None):
               '조사': research_status, '투자원칙': strategy.INSTRUCTIONS,
               '처리함': [], '판단해줘': [], '건너뜀': [],
               '장': '열림' if trade.kr_open() else '닫힘'}
+    if mode == '--do':
+        result['투표'] = ({'상태': 'ready', '유효응답': 3, '결정서': plan['plan_id'][:12],
+                          '입력시각': plan['input']['created_at'], '만료시각': plan['input']['expires_at']}
+                         if plan else {'상태': '주문 보류', '이유': plan_error})
     if mode == '--account':
         result['요약'] = f'운용 예산 100만 원 · 보유 {len(held)}종목 · {state["halted"] or "조회 정상"}'
         return result
@@ -328,7 +352,8 @@ def run(act, mode, calls=None):
             if forced:
                 action, reason = 'sell', f'평균 매입가 대비 {m["pnl_pct"]:+.2f}%: {strategy.STOP_LOSS_PCT:g}% 손절'
                 call = {'reason': reason}
-            elif mode == '--do' and valid_call(call):
+            elif mode == '--do' and plan and isinstance(call, dict):
+                call = {**call, 'plan_id': plan['plan_id'], 'expires_at': plan['input']['expires_at']}
                 m['ai'] = call
                 action, reason = strategy.decide(m)
                 if action == 'buy' and (not research.eligible(catalog, code) or not call.get('news')):
@@ -336,7 +361,7 @@ def run(act, mode, calls=None):
                 # 재평가 연장은 명시적 결정과 근거 출처가 있어야만 인정합니다.
                 position = state['positions'].get(code)
                 urls = call.get('review_sources', [])
-                if position and review_due(position) and call.get('review') == 'renew':
+                if position and review_due(position) and call.get('review') == 'renew' and research.eligible(catalog, code):
                     if not urls or not all(research.valid_url(u) for u in urls):
                         raise GuardError('보유 연장에는 새로 확인한 근거 출처가 필요합니다.')
                     if not dry and call['decision'] == 'hold':
