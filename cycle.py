@@ -82,6 +82,14 @@ def inspect(data, previous=None):
 
 def gate():
     _, data = collection.load_current()
+    if strategy_enabled():
+        import quant
+        plan = quant.publish(data)
+        result = {'version': 1, 'input_id': data['input_id'], 'checked_at': managed.now().isoformat(),
+                  'decision': 'quant', 'plan_id': plan['plan_id'], 'reasons': plan['errors'],
+                  'execute_existing': False, 'summary': quant.describe(plan)}
+        managed.save(AUDIT, result)
+        return result
     try:
         previous = voting.load_plan()
         if previous['input']['account_id'] != data['account_id']:
@@ -94,6 +102,11 @@ def gate():
     return result
 
 
+def strategy_enabled():
+    import strategy
+    return strategy.QUANT_ENABLED
+
+
 def execution_plan():
     """자료와 점검 결과와 결정서가 같은 회차인지 확인. 실패하면 이전 매수 의견도 실행하지 않음."""
     if not broker.MOCK:
@@ -103,6 +116,13 @@ def execution_plan():
     age = managed.now() - research.timestamp(audit['checked_at'])
     if audit['input_id'] != data['input_id'] or not dt.timedelta(0) <= age <= dt.timedelta(minutes=30):
         raise managed.GuardError('회차 자료와 판단 점검이 다르거나 점검이 만료됐습니다.')
+    if strategy_enabled():
+        import quant
+        plan = quant.load_plan()
+        if (audit.get('decision') != 'quant' or audit.get('plan_id') != plan['plan_id']
+                or plan['input']['input_id'] != data['input_id']):
+            raise managed.GuardError('이번 회차 퀀트 결정서가 없어 이전 결정을 실행하지 않습니다.')
+        return voting.PLAN
     if audit['decision'] == 'blocked' or (audit['decision'] == 'skip' and not audit['execute_existing']):
         return None
     plan = voting.load_plan()

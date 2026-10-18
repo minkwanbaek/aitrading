@@ -161,6 +161,7 @@ def quote(code):
         # HTS 시가총액은 억원 단위입니다. 원 단위로 맞춥니다.
         "market_cap": int((number("hts_avls") or 0) * 100_000_000) or None,
         "industry": str(out.get("bstp_kor_isnm") or "").strip() or None,
+        "exchange_date": str(out.get("bsop_date") or ""),
     }
 
 
@@ -192,6 +193,27 @@ def closes(code, days=20):
     values = [(d, p) for d, p in values if d and p > 0]
     values.sort()  # NH는 최신순으로 주므로 뒤집습니다.
     return [p for _, p in values]
+
+
+def daily_bars(code, days=90):
+    """NH 공식 일봉. 날짜와 단위를 보존하며 수정주가/총수익 자료라고 주장하지 않습니다."""
+    out = _call('/krstock/quote/v1/period', {
+        'iem_cd': code, 'market_cd': 'KRX', 'gubun': '1', 'array_cnt': str(days),
+        'maxavg': '5', 'today_cls_code': '0', 'view_main_yn': 'Y',
+        'out1_scale_change': '0',  # 단위 변경 없음. 실제 일봉 응답 vol=주, tr_pbmn=원.
+    }, live_read=True)
+    rows = out.get('Output_1')
+    if not isinstance(rows, list) or not rows:
+        raise RuntimeError('날짜 있는 일봉을 받지 못했습니다.')
+    return sorted([{'date': str(r.get('bsop_date') or ''),
+                    'close': float(r.get('stck_prpr') or 0),
+                    'high': float(r.get('stck_hgpr') or 0), 'low': float(r.get('stck_lwpr') or 0),
+                    'volume': float(r.get('vol') or 0),
+                    'turnover': float(r.get('tr_pbmn') or 0),
+                    'session_date': str((out.get('Output_0') or {}).get('bsop_date') or ''),
+                    'capital_event': str(r.get('fcam_mod_cls_code') or '00'),
+                    'ex_event': str(r.get('flng_cls_code') or '00')}
+                   for r in rows], key=lambda r: r['date'])
 
 
 def cash(act):

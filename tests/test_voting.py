@@ -188,6 +188,7 @@ class VotingTests(unittest.TestCase):
                 send.assert_not_called()
                 self.assertEqual(result['투표']['상태'], '주문 보류')
 
+    @mock.patch.object(strategy, 'QUANT_ENABLED', False)
     def test_valid_consensus_flows_through_engine_and_reserves_plan_before_order(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / 'state.json'

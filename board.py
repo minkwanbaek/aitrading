@@ -233,19 +233,29 @@ def managed_cards(saved):
     import research
     out = ''
     import voting
-    out += '<div class="card"><h2>독립 세 AI 결정서</h2>'
-    out += '<p class="none">평일 07:30 기업 변화 조사 · 09~15시 매시간 수집 → 필요할 때 세 AI 판단 → 모의매매</p>'
+    quant_mode = trade.strategy.QUANT_ENABLED
+    out += '<div class="card"><h2>' + ('상대 강도 퀀트 전략' if quant_mode else '독립 세 AI 결정서') + '</h2>'
+    out += ('<p>AI는 기업 발굴·사실 확인, 매매는 고정 수치 규칙이 담당합니다.</p>'
+            '<p class="none">점수 = 전일까지 완료된 60거래일 기업 수익률 − KODEX 200 ETF 가격 수익률. '
+            '성공 확률이 아닙니다. 매시간 점검하되 순위 변화만으로 교체하지 않습니다.</p>' if quant_mode else
+            '<p class="none">평일 07:30 기업 변화 조사 · 09~15시 매시간 수집 → 필요할 때 세 AI 판단 → 모의매매</p>')
     try:
         gate = voting.read(voting.ROOT / '.cache' / 'gate.json')
         stamp = research.timestamp(gate['checked_at']).astimezone(trade.SEOUL).strftime('%m/%d %H:%M')
-        title = {'request': '독립 판단 요청', 'skip': 'AI 호출 생략', 'blocked': '자료 문제로 판단 보류'}[gate['decision']]
+        title = {'quant': '퀀트 규칙 계산', 'request': '독립 판단 요청', 'skip': 'AI 호출 생략', 'blocked': '자료 문제로 판단 보류'}[gate['decision']]
         out += '<p>' + esc(stamp + ' · ' + title) + '</p><p>' + esc(' / '.join(gate['reasons'])) + '</p>'
-        out += '<p class="none">생략은 새로운 보유 의견이 아닙니다. 아래는 마지막 실제 AI 판단입니다.</p>'
+        if not quant_mode:
+            out += '<p class="none">생략은 새로운 보유 의견이 아닙니다. 아래는 마지막 실제 AI 판단입니다.</p>'
     except Exception:
         pass
     try:
-        plan = voting.load_plan()
-        out += '<p>A · B · C 유효 응답 3개 · 2표 이상 일치 시 채택</p>'
+        if quant_mode:
+            import quant
+            plan = quant.load_plan()
+            out += '<p>매매 AI 호출 0회 · 양수 점수의 적격 후보부터 예산 안에서 검토</p>'
+        else:
+            plan = voting.load_plan()
+            out += '<p>A · B · C 유효 응답 3개 · 2표 이상 일치 시 채택</p>'
         created = research.timestamp(plan['input']['created_at']).astimezone(trade.SEOUL).strftime('%m/%d %H:%M')
         expires = research.timestamp(plan['input']['expires_at']).astimezone(trade.SEOUL).strftime('%m/%d %H:%M')
         out += '<p>입력 ' + esc(created) + ' · 만료 ' + esc(expires) + ' (한국시간)</p>'
@@ -256,14 +266,32 @@ def managed_cards(saved):
             if call.get('budget_krw'):
                 out += ' · ' + esc(f"{call['budget_krw']:,}원 이내")
             out += '</summary><p>' + esc(call['reason']) + '</p>'
+            metric = plan.get('metrics', {}).get(code)
+            if metric:
+                out += '<p>' + esc(f"기준일 {metric['signal_date']} · 기업 {metric['return_pct']:+.2f}% · "
+                                  f"비교 ETF {metric['benchmark_return_pct']:+.2f}% · 상대 강도 {metric['score_pp']:+.2f}%p") + '</p>'
             if call.get('max_buy_price'):
                 out += '<p>1주 매수 가격 상한 ' + esc(f"{call['max_buy_price']:,}원") + '</p>'
-            for vote in call['votes']:
+            for vote in call.get('votes', []):
                 out += '<p>' + esc(vote['voter'] + ': ' + vote['decision'] + ' · ' + vote['reason']) + '</p>'
             out += '</details>'
     except Exception:
         out += '<p>유효한 결정서가 없어 신규 주문을 보류합니다. 보유 종목 손절 점검은 계속합니다.</p>'
-    out += '<p class="none">같은 모델의 공통 오류는 투표로 제거되지 않습니다. 시간마다 현재가·예산·손절을 다시 확인합니다.</p></div>'
+    out += '<p class="none">시간마다 현재가·예산·손절을 다시 확인합니다. -4% 손절 가격의 실제 체결은 보장되지 않습니다.</p></div>'
+    evaluation = saved.get('성과검증') or {}
+    if quant_mode:
+        out += '<div class="card"><h2>성과 검증 · 수익 우위 미입증</h2>'
+        out += '<p class="none">기능 검사 통과는 수익성 검증이 아닙니다. 관측 횟수는 독립 거래 횟수가 아닙니다.</p>'
+        labels = {'관측수': '계좌 관측 횟수', '확인된체결주문수': '확인된 체결 주문 수',
+                  '운용수익률': '관측 시작 이후 운용 수익률', '관측최대낙폭': '관측된 최대 낙폭',
+                  '현금기준수익률': '현금 유지 기준', '비교ETF75현금25수익률': 'ETF 75%·현금 25% 비교 수익률',
+                  '동일비교구간전략수익률': '같은 비교 기간의 전략 수익률'}
+        for key, label in labels.items():
+            value = evaluation.get(key)
+            if value is not None:
+                unit = '%' if '수익률' in key or '낙폭' in key else ''
+                out += '<p>' + esc(label + ': ' + str(value) + unit) + '</p>'
+        out += '<p class="none">' + esc(evaluation.get('설명', '모의 기록을 쌓아 현금·비교 ETF와 비교합니다. 아직 성공 확률을 산출하지 않습니다.')) + '</p></div>'
     risk = saved.get('운용') or {}
     for message in saved.get('미체결관리', []) if risk.get('미체결확인중', 0) else []:
         out += '<p class="alarm">' + esc(message) + '</p>'

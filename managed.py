@@ -267,6 +267,10 @@ def submit(act, state, path, snapshot, held, m, action, call=None, dry=False):
     plan_id = call.get('plan_id')
     if plan_id and any(o.get('plan_id') == plan_id and o['code'] == code for o in state['orders']):
         return trade.noted(trade.label(m['name'], code), '이미 사용한 결정서: 재주문하지 않음', reason, '안 함')
+    if action == 'buy' and call.get('signal_date') and any(
+            o['code'] == code and o['side'] == 'buy' and o.get('signal_date') == call['signal_date']
+            and o.get('strategy_version') == strategy.QUANT_VERSION for o in state['orders']):
+        return trade.noted(trade.label(m['name'], code), '같은 신호일에 이미 매수 시도: 재진입하지 않음', reason, '안 함')
     if call.get('expires_at') and now() >= research.timestamp(call['expires_at']):
         return trade.noted(trade.label(m['name'], code), '결정서 만료로 주문 보류', reason, '안 함')
     if any(o['code'] == code for o in active_orders(state)):
@@ -298,6 +302,8 @@ def submit(act, state, path, snapshot, held, m, action, call=None, dry=False):
              'cancelled': 0, 'closed': False, 'uncertain': True}
     if plan_id:
         order['plan_id'] = plan_id
+    if call.get('signal_date'):
+        order.update(signal_date=call['signal_date'], strategy_version=strategy.QUANT_VERSION)
     state['orders'].append(order)
     save(path, state)
     try:
@@ -322,9 +328,13 @@ def run(act, mode, calls=None):
     if mode == '--do':
         import voting
         try:
-            plan = voting.validate_plan(calls, act)
+            if strategy.QUANT_ENABLED:
+                import quant
+                plan = quant.validate_plan(calls, act)
+            else:
+                plan = voting.validate_plan(calls, act)
         except Exception as exc:
-            plan_error = safe_error(exc) if isinstance(exc, GuardError) else '유효한 세 AI 결정서가 필요합니다. 단일 판단은 실행하지 않습니다.'
+            plan_error = safe_error(exc) if isinstance(exc, GuardError) else '현재 전략과 일치하는 검증된 결정서가 필요합니다.'
         calls = plan['actions'] if plan else {}
     dry = mode in ('--preview', '--account')
     snapshot = broker.domestic_snapshot(act)
@@ -368,6 +378,16 @@ def run(act, mode, calls=None):
         result['투표'] = ({'상태': 'ready', '유효응답': 3, '결정서': plan['plan_id'][:12],
                           '입력시각': plan['input']['created_at'], '만료시각': plan['input']['expires_at']}
                          if plan else {'상태': '주문 보류', '이유': plan_error})
+        if strategy.QUANT_ENABLED and plan:
+            import quant
+            result['투표'] = {'상태': '미사용: 수치 규칙으로 판단', '유효응답': 0}
+            result['퀀트'] = quant.describe(plan)
+    if strategy.QUANT_ENABLED and mode != '--preview':
+        try:
+            import performance
+            result['성과검증'] = performance.observe(path.stem, nav, state)
+        except Exception:
+            result['성과검증'] = {'상태': '평가 기록 확인 필요', '우위': '미입증'}
     if mode == '--account':
         result['요약'] = f'운용 예산 100만 원 · 보유 {len(held)}종목 · {state["halted"] or "조회 정상"}'
         return result
@@ -382,6 +402,8 @@ def run(act, mode, calls=None):
         codes = sorted(held)  # 위험 점검은 보유만 조회. 후보 시세는 직후 수집 단계에서 한 번 조회.
     else:
         codes = sorted(set(held) | set(rows)) if mode != '--do' else sorted(set(held) | set(calls))
+    if mode == '--do' and plan and strategy.QUANT_ENABLED:
+        codes.sort(key=lambda c: (c not in held, calls.get(c, {}).get('rank', float('inf')), c))
     for code in codes:
         if code in held and not any(o['code'] == code and o['side'] == 'buy' for o in state['orders']):
             result['건너뜀'].append(f'{code}: 이 프로그램 외의 보유 종목이므로 자동 매도하지 않음')
@@ -390,7 +412,7 @@ def run(act, mode, calls=None):
             result['건너뜀'].append(f'{code}: 현재 후보가 아닙니다.')
             continue
         try:
-            m = trade.context('kr', code, held, snapshot['cash_d2'])
+            m = trade.context('kr', code, held, snapshot['cash_d2'], history=not strategy.QUANT_ENABLED)
             if m['held']:
                 if m['avg'] <= 0 or m['price'] <= 0:
                     raise GuardError('손익 계산에 필요한 매입가·현재가가 없습니다.')
@@ -403,8 +425,13 @@ def run(act, mode, calls=None):
             elif mode == '--do' and plan and isinstance(call, dict):
                 call = {**call, 'plan_id': plan['plan_id'], 'expires_at': plan['input']['expires_at']}
                 m['ai'] = call
-                action, reason = strategy.decide(m)
-                if action == 'buy' and (not research.eligible(catalog, code) or not call.get('news')):
+                if strategy.QUANT_ENABLED:
+                    m['quant_decision'] = {**call, 'strategy_version': plan['strategy_version']}
+                    action, reason = strategy.decide(m)
+                else:
+                    action, reason = strategy.decide(m)
+                if action == 'buy' and (not research.eligible(catalog, code)
+                                       or (not strategy.QUANT_ENABLED and not call.get('news'))):
                     action, reason = 'hold', '최신 사업·재무 검증 또는 뉴스 확인이 없어 매수하지 않음'
                 # 재평가 연장은 명시적 결정과 근거 출처가 있어야만 인정합니다.
                 position = state['positions'].get(code)

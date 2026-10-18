@@ -131,7 +131,7 @@ def _extra_facts(m):
         return []
 
 
-def context(market, code, held, cash):
+def context(market, code, held, cash, history=True):
     """strategy.decide()에 넘길 종목 상태. 국내·미국이 같은 모양으로 나옵니다.
 
     NH 시세 응답에 이미 들어 있는 값(거래대금·52주·PER)은 추가 호출 없이 씁니다.
@@ -143,7 +143,8 @@ def context(market, code, held, cash):
         closes = broker.us_closes(code, CANDLE_DAYS)
     else:
         quote = broker.quote(code)
-        closes = broker.closes(code, CANDLE_DAYS)
+        bars = broker.daily_bars(code, 90) if history and getattr(strategy, 'QUANT_ENABLED', False) else None
+        closes = ([b['close'] for b in bars] if bars is not None else broker.closes(code, CANDLE_DAYS)) if history else []
 
     m = {
         "code": code,
@@ -168,6 +169,9 @@ def context(market, code, held, cash):
         # 사고팔지는 Codex가 정합니다. --do 가 넘겨 준 판단이 여기 들어옵니다.
         "ai": None,
     }
+    if market == 'kr' and getattr(strategy, 'QUANT_ENABLED', False):
+        m['bars'] = bars
+        m['exchange_date'] = bars[-1].get('session_date') if bars else quote.get('exchange_date')
     return m
 
 
@@ -395,7 +399,7 @@ def remember(result):
         # 막혀 있으면 화면 맨 위에 그대로 띄웁니다. 다음 회차가 잘 돌면 지워집니다.
         "문제": result.get("오류", ""),
     }
-    for field in ("계좌", "지금", "국내장", "미국장", "요약", "운용", "조사", "투표", "미체결관리"):
+    for field in ("계좌", "지금", "국내장", "미국장", "요약", "운용", "조사", "투표", "미체결관리", "퀀트", "성과검증"):
         if field in result:
             saved[field] = result[field]
     if "지금" in result:

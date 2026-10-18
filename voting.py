@@ -27,6 +27,12 @@ def digest(value):
 
 def policy():
     return {**{key: getattr(strategy, key) for key in POLICY_FIELDS},
+            **{key: getattr(strategy, key) for key in ('QUANT_ENABLED', 'QUANT_VERSION', 'QUANT_DAYS',
+                                                       'BENCHMARK_CODE', 'DEFAULT_BUY_KRW')},
+            'implementation_id': digest({name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
+                                         for name in ('strategy.py', 'quant.py', 'broker.py', 'managed.py',
+                                                      'collection.py', 'cycle.py', 'research.py', 'performance.py',
+                                                      'voting.py', 'trade.py', 'news.py')}),
             'market': 'KR', 'mock': broker.MOCK, 'instructions': strategy.INSTRUCTIONS}
 
 
@@ -95,6 +101,14 @@ def prepare(news=None):
         if state['halted'] or state.get('sync_pending') or any(o.get('uncertain') for o in pending):
             available = 0
         stocks = {}
+        benchmark = None
+        if strategy.QUANT_ENABLED:
+            try:
+                benchmark = {'code': strategy.BENCHMARK_CODE, 'name': 'KODEX 200 (지수 대용 ETF)',
+                             'bars': broker.daily_bars(strategy.BENCHMARK_CODE, 90),
+                             'mark': broker.quote(strategy.BENCHMARK_CODE)['price']}
+            except Exception as exc:
+                benchmark = {'error': managed.safe_error(exc)}
         rows = research.companies(catalog)
         if news_status == 'ok':
             failed_codes = sorted(set(failed_codes) | (set(rows) | set(held)) - set(news))
@@ -128,6 +142,8 @@ def prepare(news=None):
                                 'eligible': research.eligible(catalog, code),
                                 'buy_room': managed.buy_room(state, snap, held, code),
                                 'review_due': bool(position and managed.review_due(position))}
+                if strategy.QUANT_ENABLED:
+                    stocks[code].update(bars=m.get('bars', []), exchange_date=m.get('exchange_date'))
             except Exception as exc:
                 stocks[code] = {'error': managed.safe_error(exc), 'held': code in held,
                                 'eligible': False, 'buy_room': 0, 'company': rows.get(code), 'news': articles}
@@ -141,11 +157,14 @@ def prepare(news=None):
                 'execution': [{'code': o['code'], 'side': o['side'], 'qty': o['qty'],
                                'filled': o.get('filled', 0), 'cancelled': o.get('cancelled', 0),
                                'closed': o.get('closed', False), 'uncertain': o.get('uncertain', False),
+                               'signal_date': o.get('signal_date'), 'strategy_version': o.get('strategy_version'),
                                'cancel_requested': bool(o.get('cancel_requested_at'))} for o in state['orders']],
                 'price_note': '조회 시각의 NH 시세. 장 시작 전·휴장에는 직전 거래 시세이며 실시간 장중 시세가 아님.',
                 'available_krw': int(available),
                 'available_slots': max(0, strategy.MAX_HOLDINGS - len(set(held) | {o['code'] for o in pending if o['side'] == 'buy'})),
                 'stocks': stocks}
+        if strategy.QUANT_ENABLED:
+            data['benchmark'] = benchmark
         data['input_id'] = digest(data)
         target = ROOT / '.cache' / 'voting' / data['input_id'] / 'input.json'
         managed.save(target, data)

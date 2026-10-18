@@ -101,7 +101,8 @@ class GateTests(unittest.TestCase):
                            ('account', {'체결동기화대기': True})]:
             self.assertEqual(cycle.inspect({**data, key: value}, plan)['decision'], 'request')
 
-    def test_failed_new_judgment_never_falls_back_to_previous_plan(self):
+    @mock.patch.object(cycle, 'strategy_enabled', return_value=False)
+    def test_failed_new_judgment_never_falls_back_to_previous_plan(self, enabled):
         data, previous = inputs()
         audit = {'input_id': 'new', 'checked_at': managed.now().isoformat(), 'decision': 'request'}
         with (mock.patch.object(collection, 'load_current', return_value=(Path('input'), {**data, 'input_id': 'new'})),
@@ -110,7 +111,8 @@ class GateTests(unittest.TestCase):
             with self.assertRaisesRegex(managed.GuardError, '이번 회차 독립 판단'):
                 cycle.execution_plan()
 
-    def test_skip_requires_same_prior_plan_and_recent_matching_cycle(self):
+    @mock.patch.object(cycle, 'strategy_enabled', return_value=False)
+    def test_skip_requires_same_prior_plan_and_recent_matching_cycle(self, enabled):
         data, plan = inputs()
         audit = cycle.inspect(data, plan)
         with (mock.patch.object(collection, 'load_current', return_value=(Path('input'), data)),

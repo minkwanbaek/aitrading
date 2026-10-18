@@ -1,6 +1,9 @@
 """매매 판단. **이 파일 하나만** 성향에 맞게 바꾸면 됩니다.
 
-사고팔지는 **Codex가 정합니다.** 이 파일은 두 가지를 담습니다.
+현재 기본 전략은 quant.py의 고정 상대 강도 계산입니다. AI는 기업 발굴·사실 확인만 합니다.
+managed.py가 검증한 퀀트 결정만 decide(m)의 quant_decision으로 전달합니다.
+아래 Codex 판단 설명과 m["ai"] 경로는 QUANT_ENABLED=False인 이전 예제의 호환 설명입니다.
+이 파일은 고정 원칙과 최종 행동 검사를 담습니다.
 
   INSTRUCTIONS  Codex에게 주는 투자 원칙. 성향을 바꾸려면 여기를 고칩니다.
   decide(m)     Codex의 답을 받아 최종 결정. 여기서 넘지 말아야 할 선을 지킵니다.
@@ -104,37 +107,34 @@ MAX_LOSS_KRW = 100_000
 CASH_RESERVE_KRW = 250_000
 REVIEW_DAYS = 21
 RESEARCH_DAYS = 7
+QUANT_ENABLED = True
+QUANT_VERSION = "relative-strength-60-v1"
+QUANT_DAYS = 60
+BENCHMARK_CODE = "069500"  # KODEX 200: 지수 자체가 아닌 가격 비교용 ETF. 매수하지 않습니다.
+DEFAULT_BUY_KRW = 150_000
 US_SESSIONS = ["regular"]  # 미국을 볼 시간대: "pre" 프리마켓 · "regular" 정규장 · "after" 애프터마켓
 
 # ── Codex에게 주는 투자 원칙 ─────────────────────────────────────────
 # 성향을 바꾸고 싶으면 여기를 고치세요. 이 글이 그대로 Codex에게 갑니다.
 # 지시가 구체적일수록 판단이 일관됩니다. "알아서 잘"이라고 쓰면 그날그날 달라집니다.
-INSTRUCTIONS = """국내 테마의 밸류체인을 조사해 실제 사업·매출 연관성이 확인된 기업만 검토한다.
+INSTRUCTIONS = """AI는 국내 테마의 밸류체인 기업 발굴과 공식 사업·재무 근거 확인을 담당한다.
+매매는 전일까지 완료된 일봉 60거래일 수익률에서 KODEX 200 가격 수익률을 뺀 상대 강도로 정한다.
+이는 미래 수익률·성공 확률이 아니라 검증 중인 순위 점수다. AI의 매수 표로 덮어쓰지 않는다.
 총예산 100만 원, 최대 5종목, 종목당 20만 원 상한, 초기 현금 25만 원을 지킨다.
 관찰 후보는 3개 테마의 중복 없는 15~25개 기업이며 개수를 채우기 위한 매수는 하지 않는다.
 기업 공식 자료와 공시에서 투자 근거·수혜 경로·위험을 확인하고 최신 뉴스로 반증한다.
-자료가 불충분하면 hold. 이미 오른 가격을 단순히 뒤쫓거나 물타기하지 않는다.
-매수 금액은 budget_krw로 구체적으로 제시한다. 기본 검토액은 15만 원이며 상한은 20만 원이다.
-보유 기업은 21일마다 근거를 재평가하고 연장·매도한다. 중대한 악재는 그 전에 반영한다.
+자료가 불충분하면 신규 매수를 보류한다. 물타기하지 않는다.
+양수 점수의 적격 후보 중 점수가 높은 순서로 기본 15만 원, 상한 20만 원 이내 배분한다.
+보유 기업은 21일마다 근거를 재평가하고 연장·매도한다.
+중대한 변화는 일일 공식 근거 확인과 신규 매수 적격 여부에 반영하며 뉴스 제목만으로 자동 매도하지 않는다.
 계좌 손실 10만 원 도달 시 신규 매수 중단. 개별 종목 -4% 손절이 우선한다.
-이 고정 제한은 사용자만 변경할 수 있다. AI는 종목·실제 배분만 제한 안에서 결정한다.
-고정 +10% 익절은 쓰지 않는다. 매도는 근거 약화, 손절, 재평가 결과로 결정한다.
-
-보조 매수 조건:
-
-사라:
-- 현재가가 5일 이동평균과 20일 이동평균을 모두 넘었을 때만
-- MACD가 신호선 위일 때만 (차이가 양수)
-- RSI(14)가 70을 넘으면 사지 마
-- 현재가가 52주 최고가의 95%를 넘으면 사지 마
-
-팔아라:
-- 현재가가 5일 이동평균 아래로 내려오고 MACD 차이가 음수로 꺾였으면
-- RSI(14)가 75를 넘었으면
-
-이유에는 위에서 본 숫자를 그대로 넣어라.
-자료가 없어 안 적힌 지표는 없는 셈 쳐라.
-애매하면 hold 해라.
+이 고정 제한은 사용자만 변경할 수 있다. AI는 매매 공식·금액·순위·손절을 변경하지 않는다.
+고정 익절은 쓰지 않는다. -4% 손절은 매시간 우선 점검한다.
+21일 재평가 때 점수가 0 이하이면 매도, 양수이고 최신 사업·재무 근거가 유효하면 보유 연장한다.
+재평가 사이에는 순위 하락·RSI·MACD만으로 교체하지 않는다. 자료 실패는 연장 완료로 표시하지 않는다.
+같은 기업은 같은 신호일에 신규 매수를 한 번만 시도한다. 취소·손절 후 같은 날 재진입하지 않는다.
+뉴스 검색 성공의 빈 결과는 악재도 호재도 아니다. 제목 존재를 매수 조건으로 삼지 않는다.
+52주 고점 제외와 RSI/MACD 매매 조건은 이 퀀트 전략에서 사용하지 않는다.
 """
 
 # ── Codex가 뭐라 하든 지키는 선 ──────────────────────────────────────
@@ -143,9 +143,9 @@ STOP_LOSS_PCT = -4.0  # 사용자 확정값. AI가 변경하지 않습니다.
 TAKE_PROFIT_PCT = None  # 수익률만으로 자동 익절하지 않습니다.
 
 # 크게 버는 규칙보다 크게 잃지 않는 규칙이 오래갑니다.
-MIN_TURNOVER_KRW = 10_000_000_000  # 국내 하루 거래대금 100억 미만이면 안 삼
+MIN_TURNOVER_KRW = 10_000_000_000  # 퀀트는 완료된 20일 평균 거래대금에 적용합니다.
 MIN_TURNOVER_USD = 50_000_000  # 미국 하루 거래대금 5천만 달러 미만이면 안 삼
-MAX_NEAR_HIGH_PCT = 95.0  # 52주 최고가의 95%를 넘으면 안 삼
+MAX_NEAR_HIGH_PCT = 95.0  # 이전 예제 전용. 활성 퀀트 매수에는 적용하지 않습니다.
 
 
 def decide(m):
@@ -161,9 +161,19 @@ def decide(m):
         if TAKE_PROFIT_PCT is not None and m["pnl_pct"] >= TAKE_PROFIT_PCT:
             return "sell", f"익절 기준 +{TAKE_PROFIT_PCT}% 도달 (현재 {m['pnl_pct']:+.2f}%)"
     else:
-        skip = why_not_buy(m)
+        skip = None if QUANT_ENABLED and m.get('quant_decision') else why_not_buy(m)
         if skip:
             return "hold", skip
+
+    if QUANT_ENABLED:
+        call = m.get('quant_decision') or {}
+        if call.get('strategy_version') != QUANT_VERSION or call.get('decision') not in ('buy', 'sell', 'hold'):
+            return 'hold', '검증된 퀀트 결정이 없어 보유·관찰합니다'
+        decision = call['decision']
+        reason = call.get('reason') or '퀀트 규칙에 따른 보유·관찰'
+        if m['held']:
+            return ('sell', reason) if decision == 'sell' else ('hold', reason)
+        return ('buy', reason) if decision == 'buy' else ('hold', reason)
 
     call = m.get("ai") or {}
     decision = call.get("decision")
@@ -192,7 +202,7 @@ def why_not_buy(m):
         return f"거래가 너무 적어 팔 때 곤란할 수 있습니다 (거래대금 {money(turnover, m)})"
 
     high = m.get("high_52w")
-    if high and m["price"] >= high * MAX_NEAR_HIGH_PCT / 100:
+    if not QUANT_ENABLED and high and m["price"] >= high * MAX_NEAR_HIGH_PCT / 100:
         return f"52주 최고 {money(high, m)}에 가까워 지금은 사지 않습니다"
     return None
 
