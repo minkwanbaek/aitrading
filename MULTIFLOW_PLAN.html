@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NH 자동매매 · 전체 설계</title>
+<style>
+:root{font-family:system-ui,"Malgun Gothic",sans-serif;color:#182b41;background:#edf2f7}
+body{margin:0;padding:28px}main{max-width:1050px;margin:auto;background:white;padding:32px;border-radius:16px}
+small{color:#52677e}h1{font-size:28px;margin:8px 0}p{line-height:1.65}.flow{padding:20px;background:#12344c;color:white;border-radius:10px;font-size:18px;line-height:2}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0}
+article{border:1px solid #d3dfe9;border-radius:9px;padding:16px}article b{display:block;margin-bottom:9px}article p{font-size:14px;margin:6px 0}
+.rules{border-left:4px solid #28a08d;padding:8px 18px;background:#eff8f6;margin-top:16px}
+footer{font-size:13px;line-height:1.7;color:#52677e;margin-top:20px}a{color:#075c9b}
+@media(max-width:750px){body{padding:8px}main{padding:18px}.grid{grid-template-columns:repeat(2,1fr)}}
+@media print{body{padding:0;background:white}main{padding:8px}.grid{gap:8px}article{padding:10px}h1{font-size:24px}}
+</style>
+<main>
+<small>NH 국내 주식 · 모의투자 · 역할별 로컬 Work 8개</small>
+<h1>같은 자료를 보고, 따로 판단하고, 결과로 개선합니다.</h1>
+<p>연결 담당이 각 워크의 완료를 확인한 뒤 다음 단계로 넘깁니다. 세 판단자가 매번 따로 검색하지 않습니다.</p>
+<div class="flow">기업 발굴 → 수집·검증 → 퀀트 봉인 → 독립 A / B / C → 코드 집계 → 매매 실행 → 평가·개선<br>
+<small style="color:#bedbe5">손절·계좌 위험 점검은 자료 수집과 AI 판단보다 먼저 실행합니다.</small></div>
+<div class="grid">
+<article><b>① 기업 발굴</b><small>평일 07:30</small><p>테마와 밸류체인에서 관련 회사를 찾고 공식 사업·재무 근거를 확인합니다. 관찰 기업 15~25개, 하루 최대 3개 심층 보완.</p></article>
+<article><b>② 수집·검증</b><small>장중 매시간</small><p>시세·뉴스·계좌·보유를 한 번 모아 원본 시각과 입력 번호를 고정합니다.</p></article>
+<article><b>③ 퀀트 검증</b><small>수집 완료 후</small><p>60거래일 상대 강도를 재계산하고 날짜·단위·유동성을 확인합니다. 세 AI에게 같은 계산을 줍니다.</p></article>
+<article><b>④ 독립 판단 A</b><small>새 판단이 필요할 때</small><p>공통 자료만 보고 사업 근거·수치·반대 근거를 검토해 매수·매도·보유를 제출합니다.</p></article>
+<article><b>⑤ 독립 판단 B</b><small>A와 병렬</small><p>동일한 자료와 체크리스트를 봅니다. A와 C의 답은 보지 않습니다.</p></article>
+<article><b>⑥ 독립 판단 C</b><small>A·B와 병렬</small><p>같은 조건으로 독립 판단합니다. 매회 이전 대화가 없는 새 판단 세션을 사용합니다.</p></article>
+<article><b>⑦ 매매 실행</b><small>위험 점검 먼저 / 집계 후 실행</small><p>세 응답이 유효하고 두 표 이상 일치할 때, 퀀트·예산·현재가·미체결 조건까지 검사합니다.</p></article>
+<article><b>⑧ 평가·개선</b><small>평일 16:00</small><p>원본·판단·실제 결과를 비교합니다. 주 1개 이내 개선 실험을 제안하고 검토 전 운영 규칙을 바꾸지 않습니다.</p></article>
+</div>
+<div class="rules"><b>공통 자료 약속</b><p>입력 번호·정책·시각이 다르거나 자료·응답이 빠지면 주문을 보류합니다. 셋이 갈리면 보유합니다. 실패를 보유 의견으로 채우지 않습니다.</p>
+<b>사용자가 정한 고정 제한</b><p>100만 원 · 국내만 · 최대 5개 · 종목 상한 20만 원 · 현금 25만 원 · 손절 -4% · 손실 10만 원 시 신규 매수 중단 · 21일 재평가</p></div>
+<footer>기기와 Codex 앱이 켜져 있어야 예약이 동작합니다. 터미널을 열어 둘 필요는 없습니다.<br>
+손절은 매시간 점검으로 실제 -4% 체결을 보장하지 않습니다. 수익 우위는 아직 미입증입니다.<br>
+멈추려면 ‘NH 자동매매’ 예약을 일시 중지하세요. <a href="/">매매 현황으로 돌아가기</a></footer>
+</main></html>

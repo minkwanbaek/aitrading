@@ -16,6 +16,7 @@ import sys
 import time
 import urllib.parse
 import webbrowser
+from pathlib import Path
 
 import setup  # 화면을 어떻게 띄울지(브라우저·에이전트·공개)는 이미 정해 두었습니다
 import trade
@@ -197,6 +198,7 @@ def page(saved):
     return HEAD.format(style=STYLE, refresh=f'<meta http-equiv="refresh" content="{REFRESH}">') + f"""
 <main>
 <h1>자동매매 현황</h1>
+<p><a href="/flow">전체 멀티 워크 설계 한 장 보기</a></p>
 <p class="when">마지막 실행 {esc(saved.get("마지막실행", "-"))} · {REFRESH}초마다 저절로 새로 그리고
 {STALE // 60}분 넘으면 계좌를 다시 불러옵니다 · <a href="/?load=1">지금 다시 불러오기</a></p>
 <div class="chips">{chips}</div>
@@ -393,6 +395,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if not setup.Handler.allowed(self):
             return self._send(403, "주소 끝의 열쇠말이 없거나 틀렸습니다.", "text/plain")
         self.server.opened = True
+        if urllib.parse.urlparse(self.path).path == "/flow":
+            return self._send(200, Path(__file__).with_name("MULTIFLOW_PLAN.html").read_text(encoding="utf-8"))
         query = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
         if query.get("load") == ["1"]:
             self.server.last_try = time.time()

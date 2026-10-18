@@ -32,7 +32,7 @@ def policy():
             'implementation_id': digest({name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
                                          for name in ('strategy.py', 'quant.py', 'broker.py', 'managed.py',
                                                       'collection.py', 'cycle.py', 'research.py', 'performance.py',
-                                                      'voting.py', 'trade.py', 'news.py', 'hybrid.py', 'voter-instructions.md')}),
+                                                      'voting.py', 'trade.py', 'news.py', 'hybrid.py', 'flow.py', 'voter-instructions.md')}),
             'market': 'KR', 'mock': broker.MOCK, 'instructions': strategy.INSTRUCTIONS}
 
 
