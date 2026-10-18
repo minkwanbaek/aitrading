@@ -20,7 +20,9 @@
 5. wait_threads를 사용하되 60초 이하로 나누어 기다린다. 10분 안에 끝나지 않거나 실패하면 다음 주문을 보류한다.
    .done.json의 존재와 flow.py가 검사하는 job_hash/run_id/input_id를 확인한다.
    채팅의 '완료'만으로 통과시키지 않는다. 수집 후 quant, quant 후 A/B/C, 집계 후 실행의 순서를 지킨다.
-   작업 실패·타임아웃·응답 불명은 자동 재전송하지 않는다. 다음 위험 점검과 체결 대조에 맡긴다.
+   조회·수집·계산의 일시 실패는 원인을 확인하고 같은 JOB으로 한 번만 다시 실행할 수 있다.
+   주문을 보낼 수 있는 risk/execute의 실패·응답 불명은 재실행하지 않고 기존 체결 대조에 맡긴다.
+   세 판단이 실패하면 원문을 보존하고 실패를 hold로 바꾸지 않는다.
    Work가 --run 전에 끝나거나 10분 초과·도구 실패·필수 결과 누락이면
    alerts.py --failure FOLDER --stage STAGE --category timeout/missing/tool/blocked 중 실제 사유로 알린다.
    --run/--inspect/--aggregate 도구 안의 오류는 자동 알림이며 같은 회차·단계는 중복 발송하지 않는다.
@@ -30,6 +32,7 @@
    mock도 gate=request와 동일 공통 입력이 필요하다. 실패하면 과거 결정서로 대신 주문하지 않는다.
 7. evaluation 작업 후에는 evaluation-report.md가 실제 작성됐는지도 확인한다.
    flow.py --finish FOLDER로 회차를 종료한다. 모든 실패 이유와 누락을 보고한다.
+   오류가 나도 --finish로 회차를 정리해 다음 예약을 막지 않는다. 이 정리는 만료 후에도 가능하다.
    discovery 완료 시 후보 변경이 있을 때만 아침 알림이 자동 발송된다.
    evaluation 완료·보고서 작성 후 --finish가 장 마감 종합 보고를 하루 한 번 발송한다.
    --finish의 notification에서 delivered 또는 duplicate+prior_status=delivered일 때만 발송 성공으로 보고한다.

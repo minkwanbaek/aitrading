@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-10-17T15:29:34.992687+00:00",
+  "checked_at": "2026-10-18T06:53:58.3680572+00:00",
   "themes": [
     "로봇 구동·자동화",
     "전력망·배전 인프라",
@@ -12,8 +12,8 @@
       "name": "로보티즈",
       "theme": "로봇 구동·자동화",
       "role": "로봇 액추에이터",
-      "linkage": "공식 DYNAMIXEL 제품으로 로봇 관절 구동과의 연관 확인",
-      "risk": "테마 기대가 실제 수주·이익으로 연결되지 않을 수 있음. 재무·가격·거래량 검증 전 매수 제외.",
+      "linkage": "공식 현행 제품에서 DYNAMIXEL P 산업용 액추에이터와 Q 휴머노이드 구동 제품군을 확인. 제품 소개만으로 고객·점유율·매출 비중은 입증되지 않음.",
+      "risk": "제품 수요가 현금 창출로 이어지는지 미확인. 최신 공식 반기 재무 원문을 읽기 전 eligible 불가.",
       "status": "watch",
       "sources": [
         {
@@ -21,7 +21,7 @@
           "primary": true,
           "verified": true,
           "purpose": "listing",
-          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "checked_at": "2026-10-18T00:29:34.992687+09:00",
           "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
         },
         {
@@ -29,12 +29,27 @@
           "primary": true,
           "verified": true,
           "purpose": "business",
-          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "checked_at": "2026-10-18T00:29:34.992687+09:00",
           "summary": "공식 DYNAMIXEL 제품으로 로봇 관절 구동과의 연관 확인"
+        },
+        {
+          "url": "https://www.robotis.com/en/",
+          "primary": true,
+          "verified": true,
+          "purpose": "business",
+          "checked_at": "2026-10-18T15:51:12.4534945+09:00",
+          "summary": "2026-10-18 실제 읽음. 현행 제품 페이지에서 DYNAMIXEL P 산업용 액추에이터, Q 휴머노이드 구동 제품군 확인. 고객 및 매출 비중 미확인."
+        },
+        {
+          "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003380",
+          "primary": true,
+          "verified": false,
+          "purpose": "financial",
+          "summary": "2026.06 반기보고서 원문 접근을 시도했으나 웹 도구 접근 실패. 재무 수치를 검증하지 않았으며 checked_at을 부여하지 않음."
         }
       ],
-      "financial_case": "",
-      "invalidation": "실제 사업 연관성 또는 재무 건전성 확인 실패 시 제외"
+      "financial_case": "2026.06 반기보고서 원문 접근 실패. 최신 손익·영업현금흐름·재무부담 및 가격 판단 미확인으로 watch 유지. 2차 요약 수치는 등록하지 않음.",
+      "invalidation": "액추에이터 매출 성장 가설이 공식 매출로 확인되지 않거나 영업현금 유출·재무부담이 지속 확대되면 재검토."
     },
     {
       "code": "058610",
@@ -50,7 +65,7 @@
           "primary": true,
           "verified": true,
           "purpose": "listing",
-          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "checked_at": "2026-10-18T00:29:34.992687+09:00",
           "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
         },
         {
@@ -58,7 +73,7 @@
           "primary": true,
           "verified": true,
           "purpose": "business",
-          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "checked_at": "2026-10-18T00:29:34.992687+09:00",
           "summary": "공식 모터 카탈로그 확인. 로봇향 매출 기여는 추가 확인 필요"
         }
       ],
@@ -79,7 +94,7 @@
           "primary": true,
           "verified": true,
           "purpose": "listing",
-          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "checked_at": "2026-10-18T00:29:34.992687+09:00",
           "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
         }
       ],
@@ -100,7 +115,7 @@
           "primary": true,
           "verified": true,
           "purpose": "listing",
-          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "checked_at": "2026-10-18T00:29:34.992687+09:00",
           "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
         }
       ],
@@ -121,7 +136,7 @@
           "primary": true,
           "verified": true,
           "purpose": "listing",
-          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "checked_at": "2026-10-18T00:29:34.992687+09:00",
           "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
         }
       ],
@@ -133,16 +148,16 @@
       "name": "LS ELECTRIC",
       "theme": "전력망·배전 인프라",
       "role": "배전·전력 제어",
-      "linkage": "공식 사이트에서 전력 제품·시스템 및 데이터센터 배전 사업 확인",
-      "risk": "테마 기대가 실제 수주·이익으로 연결되지 않을 수 있음. 재무·가격·거래량 검증 전 매수 제외.",
-      "status": "watch",
+      "linkage": "2026년 2분기 공식 IR에서 배전기기·배전반·변압기·GIS 매출과 수주잔고 표 확인. 전력망·배전 설비 투자와 실제 매출 연결 확인.",
+      "risk": "수주 확대와 함께 순차입금이 전분기 6,116억원에서 8,055억원으로 증가. 수주가 현금으로 전환되는지와 운전자본 부담 확인 필요. IR은 검토 전 잠정 수치.",
+      "status": "eligible",
       "sources": [
         {
           "url": "https://www.nhplug.com/instruments/m_new_stock.mst",
           "primary": true,
           "verified": true,
           "purpose": "listing",
-          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "checked_at": "2026-10-18T00:29:34.992687+09:00",
           "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
         },
         {
@@ -150,12 +165,28 @@
           "primary": true,
           "verified": true,
           "purpose": "business",
-          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "checked_at": "2026-10-18T00:29:34.992687+09:00",
           "summary": "공식 사이트에서 전력 제품·시스템 및 데이터센터 배전 사업 확인"
+        },
+        {
+          "url": "https://www.ls-electric.com/ko/company/data/2026_2%EB%B6%84%EA%B8%B0_%EC%8B%A4%EC%A0%81%EC%9E%90%EB%A3%8C.pdf",
+          "primary": true,
+          "verified": true,
+          "purpose": "business",
+          "checked_at": "2026-10-18T15:51:12.4534945+09:00",
+          "summary": "2026년 2분기 공식 IR p5: 배전기기·배전반·변압기·GIS별 매출과 수주잔고를 확인. 전력사업 매출 10,915억원. 원문 내 그룹·본사 및 연결조정 범위를 혼동하지 않음."
+        },
+        {
+          "url": "https://www.ls-electric.com/ko/company/data/2026_2%EB%B6%84%EA%B8%B0_%EC%8B%A4%EC%A0%81%EC%9E%90%EB%A3%8C.pdf",
+          "primary": true,
+          "verified": true,
+          "purpose": "financial",
+          "checked_at": "2026-10-18T15:51:12.4534945+09:00",
+          "summary": "2026년 2분기 공식 IR p4·p7, 단위 억원: 매출 15,770, 영업이익 1,785, 현금 6,724, 순차입금 8,055, 부채비율 172%. 외부감사인 검토 전 자료. 영업현금흐름 확정치 미확인."
         }
       ],
-      "financial_case": "",
-      "invalidation": "실제 사업 연관성 또는 재무 건전성 확인 실패 시 제외"
+      "financial_case": "2026년 2분기 공식 IR(외부 검토 전): 매출 15,770억원, 영업이익 1,785억원. 2분기말 현금 6,724억원, 순차입금 8,055억원, 부채비율 172%. 공식 사업과 기본 손익·재무상태 자료를 실제 확인해 장중 검토 최소 근거 충족. 최신 확정 영업현금흐름은 미확인이고 잠정치 및 차입 증가 위험은 남아 있다. 가격·금액·매수 여부는 장중 퀀트와 독립 A/B/C가 판단한다.",
+      "invalidation": "수주 취소·납기 지연 또는 전력사업 수익성 저하, 운전자본 및 차입 증가에 비해 현금 회수가 부진하면 성장 가설 재검토."
     },
     {
       "code": "267260",
@@ -171,7 +202,7 @@
           "primary": true,
           "verified": true,
           "purpose": "listing",
-          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "checked_at": "2026-10-18T00:29:34.992687+09:00",
           "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
         }
       ],
@@ -192,7 +223,7 @@
           "primary": true,
           "verified": true,
           "purpose": "listing",
-          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "checked_at": "2026-10-18T00:29:34.992687+09:00",
           "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
         },
         {
@@ -200,7 +231,7 @@
           "primary": true,
           "verified": true,
           "purpose": "business",
-          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "checked_at": "2026-10-18T00:29:34.992687+09:00",
           "summary": "공식 전력설비 제품군에서 초고압·배전변압기와 차단기 확인"
         }
       ],
@@ -221,7 +252,7 @@
           "primary": true,
           "verified": true,
           "purpose": "listing",
-          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "checked_at": "2026-10-18T00:29:34.992687+09:00",
           "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
         }
       ],
@@ -242,7 +273,7 @@
           "primary": true,
           "verified": true,
           "purpose": "listing",
-          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "checked_at": "2026-10-18T00:29:34.992687+09:00",
           "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
         }
       ],
@@ -254,8 +285,8 @@
       "name": "HPSP",
       "theme": "반도체 공정 장비",
       "role": "반도체 공정 장비",
-      "linkage": "공식 사이트에서 반도체 제조 공정 장비 사업 확인",
-      "risk": "테마 기대가 실제 수주·이익으로 연결되지 않을 수 있음. 재무·가격·거래량 검증 전 매수 제외.",
+      "linkage": "공식 제품 페이지에서 고압수소 어닐링 장비와 반도체 계면 결함 비활성화 공정의 연관 확인. 매출 비중·특정 고객·점유율은 미확인.",
+      "risk": "반도체 설비투자와 고객 인증 일정, 기술·특허 경쟁 위험. 제품 주장만으로 독점성 또는 재무건전성을 확정하지 않음.",
       "status": "watch",
       "sources": [
         {
@@ -263,7 +294,7 @@
           "primary": true,
           "verified": true,
           "purpose": "listing",
-          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "checked_at": "2026-10-18T00:29:34.992687+09:00",
           "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
         },
         {
@@ -271,12 +302,34 @@
           "primary": true,
           "verified": true,
           "purpose": "business",
-          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "checked_at": "2026-10-18T00:29:34.992687+09:00",
           "summary": "공식 사이트에서 반도체 제조 공정 장비 사업 확인"
+        },
+        {
+          "url": "https://thehpsp.com/sub/sub02.php?page=3",
+          "primary": true,
+          "verified": true,
+          "purpose": "business",
+          "checked_at": "2026-10-18T15:51:12.4534945+09:00",
+          "summary": "2026-10-18 실제 읽음. 공식 제품 소개에서 고압수소 어닐링과 반도체 계면 결함 비활성화 용도 확인. 회사의 독점·성능 주장은 별도 검증하지 않음."
+        },
+        {
+          "url": "https://thehpsp.com/bbs/board.php?bo_table=IR_Materials&wr_id=30",
+          "primary": true,
+          "verified": false,
+          "purpose": "financial",
+          "summary": "26.2Q 재무상태표 게시일 2026-08-19 확인. 첨부 다운로드가 잘못된 접근 오류를 반환하여 재무 수치는 미검증. checked_at 미부여."
+        },
+        {
+          "url": "https://thehpsp.com/bbs/board.php?bo_table=IR_Materials&wr_id=28",
+          "primary": true,
+          "verified": false,
+          "purpose": "financial",
+          "summary": "26.2Q 손익계산서 게시일 2026-08-19 확인. 첨부 다운로드 오류로 수치 미검증. DART 반기보고서 접근도 실패."
         }
       ],
-      "financial_case": "",
-      "invalidation": "실제 사업 연관성 또는 재무 건전성 확인 실패 시 제외"
+      "financial_case": "공식 IR 게시판의 26.2Q 재무상태표·손익계산서 게시(2026-08-19)는 확인했으나 첨부 다운로드가 오류를 반환. 최신 이익·현금흐름·재무부담·가격 판단 미검증으로 watch 유지.",
+      "invalidation": "고압수소 어닐링 장비의 실제 매출 연결이 공시로 확인되지 않거나 경쟁·특허 변화 및 현금 창출 악화가 확인되면 재검토."
     },
     {
       "code": "240810",
@@ -292,7 +345,7 @@
           "primary": true,
           "verified": true,
           "purpose": "listing",
-          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "checked_at": "2026-10-18T00:29:34.992687+09:00",
           "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
         }
       ],
@@ -313,7 +366,7 @@
           "primary": true,
           "verified": true,
           "purpose": "listing",
-          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "checked_at": "2026-10-18T00:29:34.992687+09:00",
           "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
         }
       ],
@@ -334,7 +387,7 @@
           "primary": true,
           "verified": true,
           "purpose": "listing",
-          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "checked_at": "2026-10-18T00:29:34.992687+09:00",
           "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
         },
         {
@@ -342,7 +395,7 @@
           "primary": true,
           "verified": true,
           "purpose": "business",
-          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "checked_at": "2026-10-18T00:29:34.992687+09:00",
           "summary": "공식 사이트의 반도체·전력반도체 장비 사업 확인"
         }
       ],
@@ -363,7 +416,7 @@
           "primary": true,
           "verified": true,
           "purpose": "listing",
-          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "checked_at": "2026-10-18T00:29:34.992687+09:00",
           "summary": "NH 공식 종목마스터에서 종목코드·국내 상장종목명 대조. 사업·재무의 근거는 아님."
         },
         {
@@ -371,12 +424,13 @@
           "primary": true,
           "verified": true,
           "purpose": "business",
-          "checked_at": "2026-10-17T15:29:34.992687+00:00",
+          "checked_at": "2026-10-18T00:29:34.992687+09:00",
           "summary": "공식 SUPRA 제품 소개에서 포토레지스트 제거 장비 확인"
         }
       ],
       "financial_case": "",
       "invalidation": "실제 사업 연관성 또는 재무 건전성 확인 실패 시 제외"
     }
-  ]
+  ],
+  "full_reviewed_at": "2026-10-18T00:29:34.992687+09:00"
 }

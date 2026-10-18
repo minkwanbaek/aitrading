@@ -201,19 +201,21 @@ def _run(path, role):
     receipt_path = folder / (job['stage'] + '.done.json')
     if receipt_path.exists():
         return done(folder, job['stage'])  # 완료된 부작용을 재실행하지 않는다.
-    # 접수/중단/응답 불명 시 자동 재전송 금지. 새 회차의 기존 엔진 대조에 맡긴다.
+    # 주문 가능 단계만 재실행 금지. 조회·계산·응답 검사는 실패 원인을 고친 뒤 다시 실행할 수 있다.
     save_once(folder / (job['stage'] + '.started.json'), {'job_hash': voting.digest(job)})
-    if (folder / (job['stage'] + '.attempted')).exists():
-        raise managed.GuardError('이미 시작된 작업입니다. 불명 응답을 재실행하지 않습니다.')
-    (folder / (job['stage'] + '.attempted')).touch(exist_ok=False)
     stage = job['stage']
+    orders_possible = stage in ('risk', 'execute')
+    if orders_possible and (folder / (stage + '.attempted')).exists():
+        raise managed.GuardError('이미 시작된 작업입니다. 불명 응답을 재실행하지 않습니다.')
+    (folder / (stage + '.attempted')).touch(exist_ok=not orders_possible)
     if stage == 'risk':
         command(ROOT / 'trade.py', '--preview' if job['mode'] == 'verification' else '--scan')
         result = {'risk_checked': True, 'no_orders': job['mode'] == 'verification'}
     elif stage == 'data':
         command(ROOT / 'news.py')
         path, data = collection.publish(voting.read(ROOT / '.cache' / 'research-news.json'))
-        save_once(folder / 'input.json', {'input_id': data['input_id'], 'input_file': str(path)})
+        # data 완료 전의 재수집만 포인터를 갱신한다. 완료 후에는 위의 done 반환으로 재수집하지 않는다.
+        managed.save(folder / 'input.json', {'input_id': data['input_id'], 'input_file': str(path)})
         result = {'input_id': data['input_id'], 'stocks': len(data['stocks'])}
     elif stage == 'quant':
         _, data = bound(folder)
@@ -291,6 +293,21 @@ def aggregate(folder):
             'votes': len(plan['votes']), 'actions': {c: a['decision'] for c, a in plan['actions'].items()}}
 
 
+def finish(folder):
+    # 정리는 만료·코드 변경 이후에도 가능해야 다음 예약이 막히지 않는다. 주문은 수행하지 않는다.
+    folder = inside(folder)
+    meta = voting.read(folder / 'manifest.json')
+    if meta['run_id'] != folder.name or meta['root'] != str(ROOT):
+        raise managed.GuardError('회차 폴더가 다릅니다.')
+    if (folder / 'finished.json').exists():
+        return voting.read(folder / 'finished.json')
+    result = {'run_id': meta['run_id'], 'finished_at': managed.now().isoformat()}
+    if (folder / 'evaluation.job.json').exists():
+        result['notification'] = alerts.daily(folder)
+    save_once(folder / 'finished.json', result)
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group(required=True)
@@ -317,14 +334,7 @@ def main():
     elif args.aggregate:
         result = aggregate(args.aggregate)
     elif args.finish:
-        folder, meta = manifest(args.finish)
-        notification = None
-        if (folder / 'evaluation.job.json').exists():
-            notification = alerts.daily(folder)
-        result = {'run_id': meta['run_id'], 'finished_at': managed.now().isoformat()}
-        if notification is not None:
-            result['notification'] = notification
-        save_once(folder / 'finished.json', result)
+        result = finish(args.finish)
     else:
         registry = HOME / 'workers.json'
         result = {'workers': voting.read(registry) if registry.exists() else {},

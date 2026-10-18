@@ -132,6 +132,30 @@ class FlowTests(unittest.TestCase):
             with self.assertRaises(managed.GuardError):
                 flow.start('mock')
 
+    def test_read_only_data_collection_can_retry_after_temporary_failure(self):
+        self.receipt('risk', {}, 'execution')
+        path = flow.issue(self.folder, 'data')['job_file']
+        source, data = Path('input.json'), {'input_id':'same-data','stocks':{'108490':{}}}
+        original = voting.read
+        with (mock.patch.object(flow, 'command', side_effect=[TimeoutError(), None]) as command,
+              mock.patch.object(flow.collection, 'publish', return_value=(source, data)),
+              mock.patch.object(voting, 'read', wraps=voting.read) as read):
+            read.side_effect = lambda p: {} if Path(p).name == 'research-news.json' else original(p)
+            with self.assertRaises(TimeoutError):
+                flow.run(path, 'data')
+            result = flow.run(path, 'data')
+            self.assertEqual(result['status'], 'done')
+            self.assertEqual(command.call_count, 2)
+
+    def test_failed_expired_round_can_finish_and_next_round_can_start(self):
+        path = self.folder / 'manifest.json'
+        meta = voting.read(path)
+        meta.update(expires_at=(managed.now()-dt.timedelta(seconds=1)).isoformat(), policy_id='old')
+        managed.save(path, meta)
+        first = flow.finish(self.folder)
+        self.assertEqual(flow.finish(self.folder), first)
+        self.assertNotEqual(flow.start('verification')['run_id'], self.folder.name)
+
 
 if __name__ == '__main__':
     unittest.main()

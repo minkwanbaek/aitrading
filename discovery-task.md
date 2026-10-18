@@ -14,6 +14,8 @@ INVESTMENT_POLICY.md·PROJECT_CONTEXT.md·research/README.md·현재 universe.js
 3. 기존 연구 형식대로 사업·재무 공식 자료를 모두 검증한 기업만 eligible이다.
    eligible은 근거 자료 충족 표시이며 매수 추천이 아니다. financial_case는 확인한 재무 근거,
    invalidation은 가설을 반증할 사실 조건이다. 매매 결론은 장중의 퀀트 공통 근거와 독립 세 판단에 맡긴다.
+   공식 사업·기본 재무 자료를 읽었으면 미확인 항목을 명시해 다음 단계로 넘길 수 있다.
+   현금흐름 확정치나 가격 판단까지 발굴 단계의 추가 통과 조건으로 만들지 않는다.
    보유 기업이 관찰 목록에서 빠져도 자동 매도하지 않는다. 장중 수집은 보유 기업을 별도 포함한다.
 4. universe.json 형식의 .cache/research-proposal.json을 데이터로 작성하고 research.py --import로 등록한다.
    검증 실패면 이전 목록을 보존하고 데이터만 바로잡는다. 예산·고정 전략은 바꾸지 않는다.
