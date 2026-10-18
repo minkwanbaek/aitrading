@@ -11,6 +11,7 @@ import broker
 import research
 import strategy
 import telegram
+import alerts
 
 CACHE = Path(__file__).with_name('.cache')
 UTC = dt.timezone.utc
@@ -315,8 +316,9 @@ def submit(act, state, path, snapshot, held, m, action, call=None, dry=False):
         save(path, state)
     except Exception:
         save(path, state)
+        alerts.order_uncertain(act, order)
         return trade.noted(trade.label(m['name'], code), '주문 접수 여부 불명확. 재전송 없이 조회 대기', reason, '안 함')
-    telegram.notify(f"{'모의' if broker.MOCK else '실전'} {m['name']} {action} {qty}주 지정가 주문 전송")
+    alerts.order_sent(act, order, m['name'], reason)
     return trade.noted(trade.label(m['name'], code), f'{qty}주 지정가 주문 전송 (체결 확인 대기)', reason,
                        '매수' if action == 'buy' else '매도')
 
@@ -356,6 +358,7 @@ def run(act, mode, calls=None):
         save(path, state)
         if state['halted'] and not old_halt:
             telegram.notify('NH 운용 점검: ' + state['halted'])
+    alerts.observe(act, state, held, preview=(mode == '--preview'))
     research_error = ''
     try:
         catalog = research.load()
@@ -366,6 +369,7 @@ def run(act, mode, calls=None):
         research_status = {'조사필요': True, '후보수': 0, '매수검토가능': 0, '오류': research_error}
     rows = research.companies(catalog)
     result = {'계좌': '모의투자' if broker.MOCK else '실제 계좌',
+              '알림계좌식별자': path.stem,
               '지금': trade.portfolio(held, min(snapshot['cash_d2'], max(0, nav))),
               '운용': {'예산': strategy.TOTAL_BUDGET, '운용자산': nav,
                        '누적손익': nav - strategy.TOTAL_BUDGET, '매수중단': state['halted'],
@@ -375,6 +379,8 @@ def run(act, mode, calls=None):
               '처리함': [], '판단해줘': [], '건너뜀': [],
               '장': '열림' if trade.kr_open() else '닫힘'}
     if mode == '--do':
+        if plan_error:
+            alerts.execution_issue(act, '결정서')
         result['투표'] = ({'상태': 'ready', '유효응답': 3, '결정서': plan['plan_id'][:12],
                           '입력시각': plan['input']['created_at'], '만료시각': plan['input']['expires_at']}
                          if plan else {'상태': '주문 보류', '이유': plan_error})
@@ -455,6 +461,8 @@ def run(act, mode, calls=None):
             elif mode == '--do':
                 result['처리함'].append(trade.noted(trade.label(m['name'], code), '보유·관찰 유지', reason))
         except Exception as exc:
+            if not dry:
+                alerts.execution_issue(act, code)
             result['건너뜀'].append(f'{code}: ' + safe_error(exc))
     if not dry:
         save(path, state)

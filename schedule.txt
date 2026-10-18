@@ -25,6 +25,7 @@ MULTIFLOW_PLAN.md·INVESTMENT_POLICY.md·workflows/COORDINATOR.md를 따른다.
    trade.py --do·broker 직접 호출로 우회하지 않는다. -4% 손절은 투표보다 우선한다.
 6. 기존 trade.py --account로 체결·잔고·대시보드·평가 관측을 조회한다.
    실패 때도 이 조회만은 시도할 수 있다. 주문·관측·계획을 구분한다.
+   Work 실패·시간 초과·결과 누락은 workflows/COORDINATOR.md의 alerts.py 실패 알림으로 남긴다.
    flow.py --finish FOLDER로 끝낸다. 오류로 종료해도 성공한 회차라고 보고하지 않는다.
 7. board.py를 재사용한다. 없으면 절대경로와 Start-Process -WindowStyle Hidden으로 띄운다.
    요약·판단 요청/생략/보류 이유·http://127.0.0.1:8778 주소만 짧게 보고한다.

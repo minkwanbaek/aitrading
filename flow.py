@@ -11,6 +11,7 @@ import collection
 import managed
 import research
 import voting
+import alerts
 
 ROOT = Path(__file__).resolve().parent
 HOME = ROOT / '.cache' / 'multiflow'
@@ -134,6 +135,8 @@ def issue(folder, stage):
               'vote_file': str(folder / (role + '.vote.json')) if role in ('A', 'B', 'C') else None,
               'report_file': str(folder / 'evaluation-report.md') if role == 'evaluation' else None}
     path = folder / (stage + '.job.json')
+    if stage == 'discovery':
+        alerts.capture_discovery(folder)
     save_once(path, result)
     return {'job_file': str(path), **result}
 
@@ -158,6 +161,18 @@ def command(*args):
                             capture_output=True, encoding='utf-8', timeout=240)
     if result.returncode:
         raise managed.GuardError('기존 검사·수집·매매 도구가 실패했습니다. 주문을 보류합니다.')
+    # trade.py는 일부 오류를 JSON으로 보고하고 exit=0으로 끝낸다.
+    # 원문을 출력하지 않고 최종 JSON의 오류 여부만 검사한다.
+    lines = result.stdout.splitlines()
+    for index, line in enumerate(lines):
+        if line.lstrip().startswith('{'):
+            try:
+                payload = json.loads('\n'.join(lines[index:]))
+            except ValueError:
+                continue
+            if isinstance(payload, dict) and payload.get('오류'):
+                raise managed.GuardError('기존 도구가 오류를 보고했습니다. 주문을 보류합니다.')
+            break
 
 
 def run(path, role):
@@ -170,6 +185,9 @@ def run(path, role):
         if not failure.exists():
             save_once(failure, {'role': role, 'status': 'error', 'reason': managed.safe_error(exc),
                                 'failed_at': managed.now().isoformat()})
+        stage = target.name.replace('.job.json', '')
+        alerts.failure(target.parent, stage if stage in alerts.STAGES else 'coordinator',
+                       'missing' if isinstance(exc, FileNotFoundError) else 'timeout' if isinstance(exc, (TimeoutError, subprocess.TimeoutExpired)) else 'blocked')
         raise
 
 
@@ -234,6 +252,10 @@ def _run(path, role):
     receipt = {'run_id': job['run_id'], 'role': role, 'job_hash': voting.digest(job), 'status': 'done',
                'completed_at': managed.now().isoformat(), 'result': result}
     save_once(receipt_path, receipt)
+    if stage == 'discovery':
+        alerts.morning(folder)
+    elif stage == 'quant' and result['gate']['decision'] == 'blocked':
+        alerts.failure(folder, 'quant', 'blocked')
     return receipt
 
 
@@ -296,7 +318,12 @@ def main():
         result = aggregate(args.aggregate)
     elif args.finish:
         folder, meta = manifest(args.finish)
+        notification = None
+        if (folder / 'evaluation.job.json').exists():
+            notification = alerts.daily(folder)
         result = {'run_id': meta['run_id'], 'finished_at': managed.now().isoformat()}
+        if notification is not None:
+            result['notification'] = notification
         save_once(folder / 'finished.json', result)
     else:
         registry = HOME / 'workers.json'
@@ -309,5 +336,6 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as exc:
+        alerts.cli_failure(sys.argv[1:], exc)
         print(json.dumps({'status': 'blocked', 'reason': managed.safe_error(exc)}, ensure_ascii=False))
         raise SystemExit(1)

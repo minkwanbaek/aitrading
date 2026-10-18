@@ -21,11 +21,20 @@
    .done.json의 존재와 flow.py가 검사하는 job_hash/run_id/input_id를 확인한다.
    채팅의 '완료'만으로 통과시키지 않는다. 수집 후 quant, quant 후 A/B/C, 집계 후 실행의 순서를 지킨다.
    작업 실패·타임아웃·응답 불명은 자동 재전송하지 않는다. 다음 위험 점검과 체결 대조에 맡긴다.
+   Work가 --run 전에 끝나거나 10분 초과·도구 실패·필수 결과 누락이면
+   alerts.py --failure FOLDER --stage STAGE --category timeout/missing/tool/blocked 중 실제 사유로 알린다.
+   --run/--inspect/--aggregate 도구 안의 오류는 자동 알림이며 같은 회차·단계는 중복 발송하지 않는다.
+   --start 이전의 충돌 등 유효 회차가 없는 실패는 Work에 남긴다. 기기/앱 자체가 꺼지면 알림을 보낼 수 없다.
 6. 세 응답이 다 유효할 때 flow.py --aggregate FOLDER로 집계한다.
    verification은 이 회차 안에만 결정서를 저장하고 운영 결정서를 게시하지 않는다.
    mock도 gate=request와 동일 공통 입력이 필요하다. 실패하면 과거 결정서로 대신 주문하지 않는다.
 7. evaluation 작업 후에는 evaluation-report.md가 실제 작성됐는지도 확인한다.
    flow.py --finish FOLDER로 회차를 종료한다. 모든 실패 이유와 누락을 보고한다.
+   discovery 완료 시 후보 변경이 있을 때만 아침 알림이 자동 발송된다.
+   evaluation 완료·보고서 작성 후 --finish가 장 마감 종합 보고를 하루 한 번 발송한다.
+   --finish의 notification에서 delivered 또는 duplicate+prior_status=delivered일 때만 발송 성공으로 보고한다.
+   unconfirmed·local_error는 성공이 아니다. 원문/키를 출력하거나 불명 응답을 자동 재전송하지 않는다.
+   정기 알림을 수동으로 복제하거나 매시간 정상/보유 알림을 추가하지 않는다.
 
 예약은 세 개만 둔다. 평일 07:30 discovery-coordinator.md, 장중 매시간 schedule.txt,
 평일 16:00 evaluation-coordinator.md. 여덟 워크를 여덟 개 타이머로 각각 돌리지 않는다.
