@@ -15,6 +15,7 @@ import research
 import strategy
 import trade
 import voting
+import hybrid
 from test_voting import frozen, ballots
 
 
@@ -180,13 +181,15 @@ class QuantTests(unittest.TestCase):
 
     def test_different_cycle_never_executes_previous_quant_plan(self):
         data = fixture(1)
-        plan = quant.build(data)
+        data['quant_context'] = quant.context(data)
+        rehash(data)
+        plan = hybrid.aggregate(data, ballots(data))
         audit = {'input_id': data['input_id'], 'checked_at': managed.now().isoformat(),
-                 'decision': 'quant', 'plan_id': plan['plan_id']}
+                 'decision': 'request', 'plan_id': plan['plan_id']}
         with (mock.patch.object(collection, 'load_current', return_value=(Path('input'), data)),
-              mock.patch.object(voting, 'read', return_value=audit), mock.patch.object(quant, 'load_plan', return_value=plan)):
+              mock.patch.object(voting, 'read', return_value=audit), mock.patch.object(hybrid, 'load_plan', return_value=plan)):
             self.assertEqual(cycle.execution_plan(), voting.PLAN)
-            audit['plan_id'] = 'stale'
+            plan['input'] = {**data, 'input_id': 'stale'}
             with self.assertRaises(managed.GuardError):
                 cycle.execution_plan()
 
@@ -222,7 +225,9 @@ class QuantTests(unittest.TestCase):
 
     def test_valid_quant_plan_reserves_before_send_and_cannot_send_twice(self):
         data = fixture(1)
-        plan = quant.build(data)
+        data['quant_context'] = quant.context(data)
+        rehash(data)
+        plan = hybrid.aggregate(data, ballots(data))
         filename = managed.state_path('test').name
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / filename
@@ -248,7 +253,7 @@ class QuantTests(unittest.TestCase):
                   mock.patch.object(trade, 'approved', return_value=''),
                   mock.patch.object(managed.telegram, 'notify')):
                 result = managed.run('test', '--do', plan)
-                self.assertEqual(result['투표']['유효응답'], 0)
+                self.assertEqual(result['투표']['유효응답'], 3)
                 order.assert_called_once()
                 managed.run('test', '--do', plan)
                 order.assert_called_once()

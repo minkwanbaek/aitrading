@@ -329,8 +329,8 @@ def run(act, mode, calls=None):
         import voting
         try:
             if strategy.QUANT_ENABLED:
-                import quant
-                plan = quant.validate_plan(calls, act)
+                import hybrid
+                plan = hybrid.validate_plan(calls, act)
             else:
                 plan = voting.validate_plan(calls, act)
         except Exception as exc:
@@ -380,7 +380,6 @@ def run(act, mode, calls=None):
                          if plan else {'상태': '주문 보류', '이유': plan_error})
         if strategy.QUANT_ENABLED and plan:
             import quant
-            result['투표'] = {'상태': '미사용: 수치 규칙으로 판단', '유효응답': 0}
             result['퀀트'] = quant.describe(plan)
     if strategy.QUANT_ENABLED and mode != '--preview':
         try:

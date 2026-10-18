@@ -26,4 +26,4 @@ Windows 기존 Python .venv/Scripts/python.exe를 사용한다. 사용자에게 
 현재 collection.py는 기업과 KODEX 200의 날짜 있는 일봉도 완료본에 보존한다.
 61개 완료 종가·20일 평균 거래대금·거래일 일치는 quant.py가 계산한다.
 일봉 tr_pbmn은 원, vol은 주다. 현재가 조회 거래대금의 백만원 환산과 섞지 않는다.
-새 매매 투표를 만들지 않는다. 수집 후 cycle.py의 고정 퀀트 계산으로 넘긴다.
+수집 단계에서 매매 의견을 만들지 않는다. 계산된 quant_context도 고정하고 cycle.py 점검 후 필요한 세 독립 판단으로 넘긴다.

@@ -234,8 +234,8 @@ def managed_cards(saved):
     out = ''
     import voting
     quant_mode = trade.strategy.QUANT_ENABLED
-    out += '<div class="card"><h2>' + ('상대 강도 퀀트 전략' if quant_mode else '독립 세 AI 결정서') + '</h2>'
-    out += ('<p>AI는 기업 발굴·사실 확인, 매매는 고정 수치 규칙이 담당합니다.</p>'
+    out += '<div class="card"><h2>' + ('퀀트 + 독립 세 AI 판단' if quant_mode else '독립 세 AI 결정서') + '</h2>'
+    out += ('<p>세 AI가 같은 자료·퀀트 점수를 독립 검토하고 매수·매도·보유를 판단합니다.</p>'
             '<p class="none">점수 = 전일까지 완료된 60거래일 기업 수익률 − KODEX 200 ETF 가격 수익률. '
             '성공 확률이 아닙니다. 매시간 점검하되 순위 변화만으로 교체하지 않습니다.</p>' if quant_mode else
             '<p class="none">평일 07:30 기업 변화 조사 · 09~15시 매시간 수집 → 필요할 때 세 AI 판단 → 모의매매</p>')
@@ -244,15 +244,14 @@ def managed_cards(saved):
         stamp = research.timestamp(gate['checked_at']).astimezone(trade.SEOUL).strftime('%m/%d %H:%M')
         title = {'quant': '퀀트 규칙 계산', 'request': '독립 판단 요청', 'skip': 'AI 호출 생략', 'blocked': '자료 문제로 판단 보류'}[gate['decision']]
         out += '<p>' + esc(stamp + ' · ' + title) + '</p><p>' + esc(' / '.join(gate['reasons'])) + '</p>'
-        if not quant_mode:
-            out += '<p class="none">생략은 새로운 보유 의견이 아닙니다. 아래는 마지막 실제 AI 판단입니다.</p>'
+        out += '<p class="none">생략은 새로운 보유 의견이 아닙니다. 아래는 마지막 실제 AI 판단입니다.</p>'
     except Exception:
         pass
     try:
         if quant_mode:
-            import quant
-            plan = quant.load_plan()
-            out += '<p>매매 AI 호출 0회 · 양수 점수의 적격 후보부터 예산 안에서 검토</p>'
+            import hybrid
+            plan = hybrid.load_plan()
+            out += '<p>A · B · C 유효 독립 응답 3개 · 2표 이상 일치 + 퀀트·예산 조건으로 매수</p>'
         else:
             plan = voting.load_plan()
             out += '<p>A · B · C 유효 응답 3개 · 2표 이상 일치 시 채택</p>'

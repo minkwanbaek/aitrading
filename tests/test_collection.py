@@ -11,6 +11,7 @@ import collection
 import managed
 import research
 import voting
+import strategy
 from test_voting import ballots, frozen
 
 
@@ -102,6 +103,7 @@ class CollectionTests(unittest.TestCase):
                 voting.main()
         self.assertFalse((self.root / 'plan.json').exists())
 
+    @mock.patch.object(strategy, 'QUANT_ENABLED', False)
     def test_published_input_and_three_votes_produce_plan_without_fetching_data_again(self):
         path, data = self.publish_fixture()
         files = []

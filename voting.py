@@ -32,7 +32,7 @@ def policy():
             'implementation_id': digest({name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
                                          for name in ('strategy.py', 'quant.py', 'broker.py', 'managed.py',
                                                       'collection.py', 'cycle.py', 'research.py', 'performance.py',
-                                                      'voting.py', 'trade.py', 'news.py')}),
+                                                      'voting.py', 'trade.py', 'news.py', 'hybrid.py', 'voter-instructions.md')}),
             'market': 'KR', 'mock': broker.MOCK, 'instructions': strategy.INSTRUCTIONS}
 
 
@@ -165,6 +165,8 @@ def prepare(news=None):
                 'stocks': stocks}
         if strategy.QUANT_ENABLED:
             data['benchmark'] = benchmark
+            import quant
+            data['quant_context'] = quant.context(data)
         data['input_id'] = digest(data)
         target = ROOT / '.cache' / 'voting' / data['input_id'] / 'input.json'
         managed.save(target, data)
@@ -315,7 +317,13 @@ def main():
                 votes.append(read(file))
             except Exception:
                 votes.append({'voter': label, 'status': 'error', 'error': '응답 파일 누락·형식 오류'})
-        plan = aggregate(data, votes)
+        if strategy.QUANT_ENABLED:
+            import hybrid
+            plan = hybrid.aggregate(data, votes)
+            import performance
+            performance.record_plan(plan)
+        else:
+            plan = aggregate(data, votes)
         managed.save(PLAN, plan)
         managed.save(ROOT / '.cache' / 'voting' / data['input_id'] / 'plan.json', plan)
         print(json.dumps({'상태': plan['status'], '결정서': str(PLAN), '오류': plan['errors'],
@@ -323,7 +331,11 @@ def main():
                           '매도': sum(a['decision'] == 'sell' for a in plan['actions'].values())}, ensure_ascii=False, indent=2))
     else:
         try:
-            plan = load_plan()
+            if strategy.QUANT_ENABLED:
+                import hybrid
+                plan = hybrid.load_plan()
+            else:
+                plan = load_plan()
             result = {'상태': plan['status'], '투표수': len(plan['votes']),
                       '입력시각': plan['input']['created_at'], '만료시각': plan['input']['expires_at'],
                       '매수': sum(a['decision'] == 'buy' for a in plan['actions'].values()),

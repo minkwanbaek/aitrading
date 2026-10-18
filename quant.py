@@ -161,6 +161,15 @@ def build(data):
     return plan
 
 
+def context(data):
+    """AI 세 판단자에게 똑같이 주는 계산 근거. 아직 매매 결정서가 아닙니다."""
+    proposal = build(data)
+    return {'strategy_version': strategy.QUANT_VERSION,
+            'formula': '완료된 60거래일 기업 가격 수익률 - KODEX 200 ETF 가격 수익률 (%p)',
+            'metrics': proposal['metrics'], 'ranking': proposal['ranking'], 'errors': proposal['errors'],
+            'note': '양수 점수는 매수 명령이 아님. 세 AI가 같은 자료를 독립 검토하며 확률로 해석하지 않음.'}
+
+
 def validate_plan(plan, act=None, clock=None):
     if not strategy.QUANT_ENABLED or not broker.MOCK:
         raise managed.GuardError('현재 퀀트 전략은 승인된 모의투자에서만 실행합니다.')
@@ -188,12 +197,13 @@ def publish(data):
     managed.save(target, plan)
     import performance
     performance.record_plan(plan)  # 평가 기록을 보존한 뒤에만 실행용 결정서 게시
-    managed.save(voting.PLAN, plan)
+    # 세 독립 응답 없는 계산은 실행용 PLAN에 게시하지 않습니다.
     return plan
 
 
 def describe(plan):
-    return {'상태': plan['status'], '전략': plan['strategy_version'], 'AI매매호출': 0,
+    return {'상태': plan['status'], '전략': plan['strategy_version'],
+            '유효독립응답': 3 if plan.get('kind') == 'quant_vote' and plan['status'] == 'ready' else 0,
             '매수': sum(a['decision'] == 'buy' for a in plan['actions'].values()),
             '매도': sum(a['decision'] == 'sell' for a in plan['actions'].values()),
             '자료문제': plan['errors'], '순위': [
@@ -210,7 +220,9 @@ def main():
     args = parser.parse_args()
     import collection
     _, data = collection.load_current()
-    plan = build(data) if args.preview else publish(data)
+    if not args.preview:
+        raise managed.GuardError('퀀트 단독으로 실행용 결정서를 만들지 않습니다. 세 독립 응답을 먼저 집계해야 합니다.')
+    plan = build(data)
     print(json.dumps(describe(plan), ensure_ascii=False, indent=2))
 
 

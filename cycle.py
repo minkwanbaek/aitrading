@@ -59,7 +59,12 @@ def inspect(data, previous=None):
         before = old['stocks'].get(code, {})
         if evidence(stock) != evidence(before):
             reasons.append(code + ': 뉴스·사업·재무 근거 변경')
-        if stock.get('signals') != before.get('signals'):
+        if 'quant_context' in data:
+            metric = data['quant_context']['metrics'].get(code)
+            old_metric = old.get('quant_context', {}).get('metrics', {}).get(code)
+            if metric != old_metric:
+                reasons.append(code + ': 완료 일봉·퀀트 근거 변경')
+        elif stock.get('signals') != before.get('signals'):
             reasons.append(code + ': 이동평균·RSI·MACD·매수 제외 조건 변화')
         old_price = before.get('price', 0)
         if old_price <= 0 or abs(stock['price'] / old_price - 1) * 100 >= PRICE_CHANGE_PCT - 1e-9:
@@ -67,7 +72,7 @@ def inspect(data, previous=None):
         facts, prior = stock.get('facts', {}), before.get('facts', {})
         if any(facts.get(k) != prior.get(k) for k in ('수량', '평균매입가')):
             reasons.append(code + ': 보유 수량·평균매입가 변경')
-        if stock.get('review_due'):
+        if stock.get('review_due') and ('quant_context' not in data or not before.get('review_due')):
             reasons.append(code + ': 21일 보유 근거 재평가 필요')
         call = previous['actions'].get(code, {})
         if code not in pending and ((call.get('decision') == 'buy' and not stock.get('held') and stock.get('buy_room', 0) > 0)
@@ -83,20 +88,23 @@ def inspect(data, previous=None):
 def gate():
     _, data = collection.load_current()
     if strategy_enabled():
-        import quant
-        plan = quant.publish(data)
-        result = {'version': 1, 'input_id': data['input_id'], 'checked_at': managed.now().isoformat(),
-                  'decision': 'quant', 'plan_id': plan['plan_id'], 'reasons': plan['errors'],
-                  'execute_existing': False, 'summary': quant.describe(plan)}
-        managed.save(AUDIT, result)
-        return result
+        import hybrid
+        load_plan = hybrid.load_plan
+    else:
+        load_plan = voting.load_plan
     try:
-        previous = voting.load_plan()
+        previous = load_plan()
         if previous['input']['account_id'] != data['account_id']:
             previous = None
     except managed.GuardError:
         previous = None
     result = inspect(data, previous)
+    if strategy_enabled() and result['decision'] == 'request' and data.get('quant_context', {}).get('errors'):
+        result.update(decision='blocked', reasons=data['quant_context']['errors'], execute_existing=False)
+    if strategy_enabled():
+        import quant
+        import performance
+        performance.record_plan(quant.build(data))  # 투표 전 계산 기록이며 실행용 결정서는 갱신하지 않습니다.
     managed.save(AUDIT, result)
     managed.save(voting.ROOT / '.cache' / 'voting' / data['input_id'] / 'gate.json', result)
     return result
@@ -116,16 +124,13 @@ def execution_plan():
     age = managed.now() - research.timestamp(audit['checked_at'])
     if audit['input_id'] != data['input_id'] or not dt.timedelta(0) <= age <= dt.timedelta(minutes=30):
         raise managed.GuardError('회차 자료와 판단 점검이 다르거나 점검이 만료됐습니다.')
-    if strategy_enabled():
-        import quant
-        plan = quant.load_plan()
-        if (audit.get('decision') != 'quant' or audit.get('plan_id') != plan['plan_id']
-                or plan['input']['input_id'] != data['input_id']):
-            raise managed.GuardError('이번 회차 퀀트 결정서가 없어 이전 결정을 실행하지 않습니다.')
-        return voting.PLAN
     if audit['decision'] == 'blocked' or (audit['decision'] == 'skip' and not audit['execute_existing']):
         return None
-    plan = voting.load_plan()
+    if strategy_enabled():
+        import hybrid
+        plan = hybrid.load_plan()
+    else:
+        plan = voting.load_plan()
     if audit['decision'] == 'request':
         if plan['input']['input_id'] != data['input_id']:
             raise managed.GuardError('이번 회차 독립 판단이 완료되지 않아 기존 결정서는 실행하지 않습니다.')
@@ -147,7 +152,7 @@ def main():
         if path is None:
             print(json.dumps({'상태': '판단 생략·보류: 신규 결정서 주문 없음. 손절은 별도 점검.'}, ensure_ascii=False))
         else:
-            subprocess.run([sys.executable, str(voting.ROOT / 'trade.py'), '--do', str(path)],
+            subprocess.run([sys.executable, '-X', 'utf8', str(voting.ROOT / 'trade.py'), '--do', str(path)],
                            cwd=voting.ROOT, check=True)
 
 

@@ -21,7 +21,8 @@ def folder(account_id):
 
 def record_plan(plan):
     """매수뿐 아니라 탈락·보유·자료 실패도 원본 입력과 연결해 보존합니다."""
-    target = folder(plan['input']['account_id']) / 'decisions' / (plan['input']['input_id'] + '.json')
+    stage = 'decisions' if plan.get('kind') == 'quant_vote' else 'quant-drafts'
+    target = folder(plan['input']['account_id']) / stage / (plan['input']['input_id'] + '.json')
     if target.exists():
         if voting.read(target) != plan:
             raise managed.GuardError('이미 기록된 평가 입력이 달라 덮어쓰지 않습니다.')
@@ -38,7 +39,7 @@ def observe(account_id, nav, state):
         plan = voting.read(voting.PLAN)
         data = voting.validate_input(plan['input'])
         age = managed.now() - research.timestamp(data['created_at'])
-        if (data['account_id'] == account_id and plan.get('kind') == 'quant'
+        if (data['account_id'] == account_id and plan.get('kind') == 'quant_vote'
                 and 0 <= age.total_seconds() <= 90 * 60):
             mark = (data.get('benchmark') or {}).get('mark')
     except Exception:
