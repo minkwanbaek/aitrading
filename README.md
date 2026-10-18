@@ -1,4 +1,4 @@
-# aitrading — NH 국내 주식 모의 퀀트 자동매매
+# NH자동매매 flow — aitrading
 
 조코딩 NH투자증권 Namuh PLUG 예제를 바탕으로 만들었습니다.
 **AI가 기업을 발굴하고, 독립 세 AI가 같은 자료·퀀트 점수를 검토해 매수·매도·보유를 판단합니다.**
@@ -101,6 +101,7 @@ AI는 이 값을 바꾸지 않습니다. 큰 모의 계좌 잔액과 100만 원 
 | 자료 | 역할 |
 |---|---|
 | [멀티 워크 한 장 설계](MULTIFLOW_PLAN.md) | 실제 역할 8개·공통 자료·개선 순환 |
+| [텔레그램 알림](TELEGRAM_NOTIFICATIONS.md) | 현재 발송 시점·내용·미구현 범위 |
 | [워크 연결 지침](workflows/COORDINATOR.md) | 작업 발급·전달·완료 확인 |
 | [전략 정의](QUANT_STRATEGY.md) | 정확한 공식·매도·평가 범위 |
 | [고정 제한](INVESTMENT_POLICY.md) | 사용자 고정값 |
